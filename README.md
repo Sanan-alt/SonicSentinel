@@ -72,9 +72,21 @@ SonicSentinel/
 │   └── alert_rules.json       # configurable alert rules (severity, thresholds, actions)
 ├── tests/                     # pytest suite (preprocessing, features, augmentation, alerts)
 ├── sample_audio/              # one demo clip per available class
+├── documentation/             # INSTALL guide + SRS document
 ├── esc50.csv                  # ESC-50 target -> category reference
+├── start_sonicsentinel.bat    # double-click to launch the web app
+├── train_models.bat           # double-click to (re)train the models
 ├── requirements.txt · AI_USAGE.md · LICENSE · README.md
 ```
+
+## ⚡ One-Click Start (Windows)
+
+Just **double-click** a `.bat` file — no terminal needed:
+
+| File | What it does |
+|:---|:---|
+| **`start_sonicsentinel.bat`** | Launches the web app and opens `http://127.0.0.1:5000` in your browser. Auto-creates a virtual environment + installs dependencies on first run. |
+| **`train_models.bat`** | Runs the full pipeline (organize → features → train). Needed once, or after adding new audio to `Dataset/`. |
 
 > 🔒 The raw audio dataset and generated model artefacts are intentionally **not** committed
 > (see `.gitignore`). They are kept locally or in Git LFS / object storage because of size.
