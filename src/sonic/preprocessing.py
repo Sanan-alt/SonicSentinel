@@ -65,3 +65,31 @@ def load_audio(path, settings: AudioSettings) -> np.ndarray:
         y = y[:target_len]
 
     return y.astype(np.float32)
+
+
+def load_raw(path, settings: AudioSettings) -> np.ndarray:
+    """Load + mono + resample only (no trim/pad) - for segmentation."""
+    y, _ = librosa.load(path, sr=settings.sample_rate, mono=settings.mono)
+    return y.astype(np.float32)
+
+
+def segment_signal(y: np.ndarray, settings: AudioSettings):
+    """Split a long signal into fixed-duration segments (SRS requirement xv/xxii).
+
+    Yields (segment_signal, start_sec, end_sec). Each segment is padded/truncated
+    to the fixed clip length. Short signals yield a single segment.
+    """
+    sr = settings.sample_rate
+    win = int(settings.duration * sr)
+    total = y.shape[0]
+    if total <= win:
+        seg = np.pad(y, (0, win - total), mode="constant") if total < win else y[:win]
+        yield seg.astype(np.float32), 0.0, round(total / sr, 3)
+        return
+    start = 0
+    while start < total:
+        chunk = y[start:start + win]
+        if chunk.shape[0] < win:
+            chunk = np.pad(chunk, (0, win - chunk.shape[0]), mode="constant")
+        yield chunk.astype(np.float32), round(start / sr, 3), round(min(start + win, total) / sr, 3)
+        start += win

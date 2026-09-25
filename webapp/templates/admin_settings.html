@@ -1,0 +1,81 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Settings | SonicSentinel AI{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 1000px;">
+
+  <h1 style="font-family: var(--font-display); font-size: 2.2rem; font-weight: 800; margin-bottom: 4px;">
+    Administrator Settings
+  </h1>
+  <p style="color: var(--text-secondary); margin-bottom: 24px;">
+    Configure detection thresholds and alert rules. Changes apply immediately (SRS xxxv, xxxvi, liii).
+  </p>
+
+  <form method="POST">
+
+    <!-- Global defaults -->
+    <div class="card" style="margin-bottom: 20px;">
+      <div class="card-title" style="margin-bottom: 14px;">Global Defaults</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 18px;">
+        <div>
+          <label style="font-size: 0.82rem; color: var(--text-secondary);">Minimum confidence (%)</label>
+          <input class="form-control" type="number" step="0.5" name="default_min_confidence"
+                 value="{{ rules.defaults.min_confidence }}">
+        </div>
+        <div>
+          <label style="font-size: 0.82rem; color: var(--text-secondary);">Top-two margin (%)</label>
+          <input class="form-control" type="number" step="0.5" name="default_top_two_margin"
+                 value="{{ rules.defaults.top_two_margin }}">
+        </div>
+      </div>
+    </div>
+
+    <!-- Per-category rules -->
+    <div class="card" style="margin-bottom: 20px;">
+      <div class="card-title" style="margin-bottom: 14px;">Per-Category Alert Rules</div>
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.86rem;">
+          <thead>
+            <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-family: var(--font-mono); font-size: 0.72rem;">
+              <th style="padding: 8px; text-align: left;">CATEGORY</th>
+              <th style="padding: 8px;">MIN CONFIDENCE %</th>
+              <th style="padding: 8px;">CONSECUTIVE</th>
+              <th style="padding: 8px;">SEVERITY</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for cat, rule in rules.categories.items() %}
+            <tr style="border-bottom: 1px solid var(--border-color);">
+              <td style="padding: 8px; font-weight: 600;">{{ cat.replace('_', ' ') | title }}</td>
+              <td style="padding: 8px;">
+                <input class="form-control" type="number" step="0.5" name="mc_{{ cat }}"
+                       value="{{ rule.min_confidence if rule.min_confidence is defined else rules.defaults.min_confidence }}"
+                       style="width: 90px;">
+              </td>
+              <td style="padding: 8px;">
+                <input class="form-control" type="number" min="1" name="rc_{{ cat }}"
+                       value="{{ rule.required_consecutive if rule.required_consecutive is defined else 1 }}"
+                       style="width: 70px;">
+              </td>
+              <td style="padding: 8px;">
+                <select class="form-select" name="sev_{{ cat }}" style="width: 140px;">
+                  {% for s in severities %}
+                    <option value="{{ s }}" {% if rule.severity == s %}selected{% endif %}>{{ s }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <button class="btn btn-primary" type="submit">
+      <i class="fa-solid fa-floppy-disk"></i> Save &amp; Apply
+    </button>
+  </form>
+
+</div>
+{% endblock %}

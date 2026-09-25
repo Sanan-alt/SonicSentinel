@@ -149,7 +149,8 @@ All paths, audio settings, feature parameters, augmentation, the model list, and
 |:---|:---|
 | **Dashboard** | Live telemetry from the real event database |
 | **Audio Analysis** | Upload a clip → real dual-model prediction, confidence comparison, quality, waveform + spectrogram |
-| **Live Monitor** | Web-Audio mic capture; ~2s windows are sent to the models on peak |
+| **Live Monitor** | Web-Audio mic capture; continuous ~2.5s WAV windows sent to both models; consecutive-window confirmation for critical alerts |
+| **Admin Settings** | Edit confidence thresholds, consecutive requirements, and per-category severity at runtime (admin only) |
 | **Critical Events** | Auto-generated high/critical alerts |
 | **Manual Review** | Low-confidence / disagreement / poor-quality events queued for reviewers |
 | **Event History / Reports** | Full audit trail + CSV export |

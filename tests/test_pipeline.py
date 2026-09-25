@@ -115,3 +115,59 @@ def test_pipeline_to_ui_mapping_is_bijective_for_10_classes():
     assert len(PIPELINE_TO_UI) == 10
     ui_keys = {c["category_key"] for c in MANDATORY_SOUND_CATEGORIES}
     assert set(PIPELINE_TO_UI.values()) == ui_keys
+
+
+# ---- new SRS-completion features ----
+def test_metadata_reports_bit_depth(tmp_path):
+    """extract_metadata should derive bit depth for a PCM_16 WAV (SRS x)."""
+    import numpy as np
+    import soundfile as sf
+    from services import audio_io
+
+    p = tmp_path / "tone.wav"
+    y = (0.3 * np.sin(2 * np.pi * 440 * np.linspace(0, 2, 44100 * 2))).astype("float32")
+    sf.write(str(p), y, 44100, subtype="PCM_16")
+    meta = audio_io.extract_metadata(p)
+    assert meta["bit_depth"] == 16
+    assert meta["channels"] == 1
+
+
+def test_quality_reports_background_noise_level(tone):
+    from services import audio_io
+
+    y, sr = tone
+    q = audio_io.assess_quality(y, sr)
+    assert "background_noise_level" in q
+    assert q["background_noise_level"] >= 0
+
+
+def test_segmentation_splits_long_signal(cfg):
+    import numpy as np
+    from sonic.preprocessing import AudioSettings, segment_signal
+
+    settings = AudioSettings.from_config(cfg)
+    sr = settings.sample_rate
+    long_signal = np.zeros(int(sr * settings.duration * 3), dtype="float32")  # 3 windows
+    segs = list(segment_signal(long_signal, settings))
+    assert len(segs) == 3
+    # each segment padded/truncated to the fixed window length
+    win = int(settings.duration * sr)
+    assert all(s[0].shape[0] == win for s in segs)
+    # start/end timestamps present and increasing
+    assert segs[0][1] == 0.0 and segs[1][1] > segs[0][1]
+
+
+def test_wav_window_decodes_for_live(tmp_path):
+    """A 16-bit PCM WAV (as the browser sends for live) must load fine."""
+    import numpy as np
+    import soundfile as sf
+    from sonic.config import load_config
+    from sonic.preprocessing import AudioSettings, load_audio
+
+    cfg = load_config()
+    settings = AudioSettings.from_config(cfg)
+    p = tmp_path / "live_window.wav"
+    y = (0.4 * np.sin(2 * np.pi * 300 * np.linspace(0, 2.5, 44100 * 2 + 22050))).astype("float32")
+    sf.write(str(p), y, 44100, subtype="PCM_16")
+    out = load_audio(p, settings)
+    assert out.shape[0] == int(settings.duration * settings.sample_rate)

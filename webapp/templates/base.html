@@ -46,6 +46,9 @@
           <li><a href="{{ url_for('manual_review') }}" class="{% if request.endpoint == 'manual_review' %}active{% endif %}" title="Human-in-the-Loop Review"><i class="fa-solid fa-user-check"></i> <span>Review</span></a></li>
           <li><a href="{{ url_for('event_history') }}" class="{% if request.endpoint == 'event_history' %}active{% endif %}" title="Incident Logs"><i class="fa-solid fa-clock-rotate-left"></i> <span>History</span></a></li>
           <li><a href="{{ url_for('reports') }}" class="{% if request.endpoint == 'reports' %}active{% endif %}" title="Acoustic Intelligence Reports"><i class="fa-solid fa-chart-pie"></i> <span>Reports</span></a></li>
+          {% if current_user and current_user.role in ['Administrator', 'administrator'] %}
+          <li><a href="{{ url_for('admin_settings') }}" class="{% if request.endpoint == 'admin_settings' %}active{% endif %}" title="Admin Settings"><i class="fa-solid fa-gear"></i> <span>Settings</span></a></li>
+          {% endif %}
         </ul>
       </nav>
 

@@ -83,11 +83,13 @@ augmentation:
 # Training settings.
 training:
   seed: 42
-  # Models to compare (SRS Step 7: at least three).
+  hyperparameter_tuning: true   # GridSearchCV over small grids (SRS xxiv)
+  # Models to compare (SRS Step 7: at least three). Gradient boosting is
+  # available in the code but excluded here because it is very slow to tune on
+  # the augmented set; XGBoost provides gradient boosting far more efficiently.
   models:
     - svm
     - random_forest
-    - gradient_boosting
     - xgboost
   # The "Google Teachable Machine" substitute: a SECOND model trained
   # independently on the same training split (a different algorithm family so

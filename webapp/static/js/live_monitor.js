@@ -9,8 +9,76 @@ let mediaStream = null;
 let analyser = null;
 let animationFrameId = null;
 let isPaused = false;
-let mediaRecorder = null;      // captures short windows for real classification
 let liveBusy = false;          // prevents overlapping classification requests
+let scriptNode = null;         // ScriptProcessor capturing raw PCM
+let pcmChunks = [];            // buffered Float32 PCM for the current window
+let liveSampleRate = 44100;
+let windowTimer = null;        // interval that classifies each fixed window
+const WINDOW_MS = 2500;        // fixed live window length (SRS: 1-3s)
+
+// Encode buffered Float32 PCM chunks into a 16-bit PCM WAV Blob.
+function encodeWav(chunks, sampleRate) {
+  let length = 0;
+  for (const c of chunks) length += c.length;
+  const pcm = new Float32Array(length);
+  let off = 0;
+  for (const c of chunks) { pcm.set(c, off); off += c.length; }
+
+  const buffer = new ArrayBuffer(44 + pcm.length * 2);
+  const view = new DataView(buffer);
+  const writeStr = (o, s) => { for (let i = 0; i < s.length; i++) view.setUint8(o + i, s.charCodeAt(i)); };
+
+  writeStr(0, 'RIFF');
+  view.setUint32(4, 36 + pcm.length * 2, true);
+  writeStr(8, 'WAVE');
+  writeStr(12, 'fmt ');
+  view.setUint32(16, 16, true);
+  view.setUint16(20, 1, true);            // PCM
+  view.setUint16(22, 1, true);            // mono
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true);
+  view.setUint16(32, 2, true);
+  view.setUint16(34, 16, true);           // 16-bit
+  writeStr(36, 'data');
+  view.setUint32(40, pcm.length * 2, true);
+
+  let p = 44;
+  for (let i = 0; i < pcm.length; i++) {
+    const s = Math.max(-1, Math.min(1, pcm[i]));
+    view.setInt16(p, s < 0 ? s * 0x8000 : s * 0x7fff, true);
+    p += 2;
+  }
+  return new Blob([view], { type: 'audio/wav' });
+}
+
+// Take the current PCM window, encode to WAV, send to the backend for a real
+// dual-model classification, and reflect the result live.
+async function processLiveWindow() {
+  if (isPaused || liveBusy || pcmChunks.length === 0) return;
+  const chunks = pcmChunks;
+  pcmChunks = [];                          // start a fresh window
+
+  // Ignore near-silent windows (nothing meaningful to classify).
+  let peak = 0;
+  for (const c of chunks) for (let i = 0; i < c.length; i++) peak = Math.max(peak, Math.abs(c[i]));
+  if (peak < 0.01) return;
+
+  liveBusy = true;
+  try {
+    const wav = encodeWav(chunks, liveSampleRate);
+    const form = new FormData();
+    form.append('audio', wav, 'live_window.wav');
+    const res = await fetch('/api/classify-live', { method: 'POST', body: form });
+    const data = await res.json();
+    if (res.ok && !data.error) {
+      updateLiveResult(data);
+    }
+  } catch (err) {
+    console.error('Live classification failed:', err);
+  } finally {
+    liveBusy = false;
+  }
+}
 
 // 5 Required States: 'Available', 'Active', 'Paused', 'Disconnected', 'Permission denied'
 let currentMicStatus = 'Disconnected';
@@ -223,17 +291,27 @@ async function startMicrophone() {
     analyser.fftSize = 1024;
     source.connect(analyser);
 
-    // Set up a MediaRecorder so we can send real audio windows to the model.
-    try {
-      mediaRecorder = new MediaRecorder(mediaStream);
-    } catch (e) {
-      mediaRecorder = null;
-      console.warn('MediaRecorder unavailable; live classification disabled.', e);
-    }
+    // Capture raw PCM so we can build real WAV windows the backend can decode
+    // (no MediaRecorder/webm, no ffmpeg needed).
+    liveSampleRate = audioContext.sampleRate;
+    pcmChunks = [];
+    const bufferSize = 4096;
+    scriptNode = audioContext.createScriptProcessor(bufferSize, 1, 1);
+    scriptNode.onaudioprocess = (e) => {
+      if (isPaused) return;
+      pcmChunks.push(new Float32Array(e.inputBuffer.getChannelData(0)));
+    };
+    source.connect(scriptNode);
+    scriptNode.connect(audioContext.destination);
+
+    // Continuous fixed-window monitoring (SRS Step 12): every WINDOW_MS,
+    // take the buffered audio, encode to WAV, and classify it.
+    if (windowTimer) clearInterval(windowTimer);
+    windowTimer = setInterval(processLiveWindow, WINDOW_MS);
 
     isPaused = false;
     updateMicStatus('Active', 'Listening to acoustic stream in real-time...');
-    
+
     // UI Button states
     toggleControlButtons(true);
 
@@ -273,6 +351,9 @@ function togglePauseMicrophone() {
 }
 
 function stopMicrophone() {
+  if (windowTimer) { clearInterval(windowTimer); windowTimer = null; }
+  if (scriptNode) { try { scriptNode.disconnect(); } catch (e) {} scriptNode = null; }
+  pcmChunks = [];
   if (mediaStream) {
     mediaStream.getTracks().forEach(track => track.stop());
     mediaStream = null;
@@ -398,10 +479,9 @@ function drawVisualizer() {
     dbBarEl.style.backgroundColor = db > 80 ? '#ef4444' : (db > 65 ? '#f59e0b' : '#10b981');
   }
 
-  // Check for sudden acoustic peak alert trigger
-  if (db > 82 && !window.peakCooldown) {
-    triggerLiveAcousticAlert(db);
-  }
+  // Live classification runs continuously via processLiveWindow() on a timer,
+  // so no per-frame peak trigger is needed here. Keep the latest dB for display.
+  window._liveDb = db;
 
   animationFrameId = requestAnimationFrame(drawVisualizer);
 }
@@ -414,65 +494,41 @@ function clearCanvas(canvasId) {
   }
 }
 
-// Live alert detection trigger - captures a real ~2s window and classifies it
-// with the backend models (SRS Step 12 real-time monitoring).
-function triggerLiveAcousticAlert(db) {
-  window.peakCooldown = true;
-  setTimeout(() => (window.peakCooldown = false), 4000);
+// Reflect a real per-window classification result on the live dashboard.
+function updateLiveResult(data) {
+  const db = Math.round(window._liveDb || 0);
 
-  if (!mediaRecorder || liveBusy) {
-    return;
+  // Update the always-visible live result strip (Python + GTM + agreement).
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
+  set('liveResultClass', data.final_class_name || data.final_class);
+  set('liveResultPy', `${data.python.confidence}%`);
+  set('liveResultGtm', `${data.gtm.confidence}%`);
+  set('liveResultAgreement', data.comparison.agreement);
+  set('liveResultSeverity', data.severity);
+  set('liveResultQuality', data.audio_quality.quality);
+
+  const sevEl = document.getElementById('liveResultSeverity');
+  if (sevEl) {
+    sevEl.className = 'badge ' + (['Critical', 'High'].includes(data.severity)
+      ? 'badge-danger' : (data.severity === 'Medium' ? 'badge-warning' : 'badge-info'));
   }
-  liveBusy = true;
 
-  const chunks = [];
-  const recorder = new MediaRecorder(mediaStream);
-  recorder.ondataavailable = (e) => {
-    if (e.data && e.data.size > 0) chunks.push(e.data);
-  };
-  recorder.onstop = async () => {
-    try {
-      const blob = new Blob(chunks, { type: recorder.mimeType || 'audio/webm' });
-      const form = new FormData();
-      form.append('audio', blob, 'live_window.webm');
-      const res = await fetch('/api/classify-live', { method: 'POST', body: form });
-      const data = await res.json();
-      if (res.ok && !data.error) {
-        showLiveDetection(data, db);
-      }
-    } catch (err) {
-      console.error('Live classification failed:', err);
-    } finally {
-      liveBusy = false;
-    }
-  };
-
-  recorder.start();
-  // Capture roughly a 2-second window.
-  setTimeout(() => {
-    if (recorder.state !== 'inactive') recorder.stop();
-  }, 2000);
-}
-
-function showLiveDetection(data, db) {
+  // Only raise the critical banner when the backend confirmed an alert
+  // (this already accounts for consecutive-window confirmation, Step 15).
   const banner = document.getElementById('liveDetectionBanner');
   if (!banner) return;
 
-  // Only surface a banner when the backend actually flags something notable.
-  const notable = ['Critical', 'High', 'Medium'].includes(data.severity);
-  if (!notable) return;
-
-  banner.style.display = 'flex';
-  banner.classList.add('flash-alert');
-
-  const nameEl = document.getElementById('detectedEventName');
-  const confEl = document.getElementById('detectedEventConfidence');
-  const dbEl = document.getElementById('detectedEventDb');
-  if (nameEl) nameEl.textContent = data.final_class_name || data.final_class;
-  if (confEl) confEl.textContent = `${data.python.confidence}%`;
-  if (dbEl) dbEl.textContent = `${db} dB`;
-
-  if (window.acousticSynth && data.severity === 'Critical') {
-    window.acousticSynth.playCategorySound('siren');
+  if (data.alert_status === 'Active' || data.confirmed_alert) {
+    banner.style.display = 'flex';
+    banner.classList.add('flash-alert');
+    const nameEl = document.getElementById('detectedEventName');
+    const confEl = document.getElementById('detectedEventConfidence');
+    const dbEl = document.getElementById('detectedEventDb');
+    if (nameEl) nameEl.textContent = data.final_class_name || data.final_class;
+    if (confEl) confEl.textContent = `${data.python.confidence}%`;
+    if (dbEl) dbEl.textContent = `${db} dB`;
+    if (window.acousticSynth && data.severity === 'Critical') {
+      window.acousticSynth.playCategorySound('siren');
+    }
   }
 }

@@ -96,6 +96,14 @@ class InferenceService:
         agreement = _agreement_label(match, conf_diff, py_conf)
         top_two_margin = self._top_two_margin(py_scores)
 
+        # Overlapping-sound detection (SRS requirement xxxix): more than one
+        # class receives significant confidence.
+        significant = [c for c, s in py_scores.items() if s >= 25.0]
+        overlapping = len(significant) >= 2
+        overlap_classes = sorted(
+            [(c, py_scores[c]) for c in significant], key=lambda kv: kv[1], reverse=True
+        )
+
         quality = audio_io.assess_quality(y, sr)
 
         # Final class: prefer Python model; the decision engine handles review.
@@ -118,6 +126,10 @@ class InferenceService:
                 "confidence_difference": conf_diff,
                 "top_two_margin": top_two_margin,
             },
+            "overlap": {
+                "overlapping": overlapping,
+                "classes": overlap_classes,
+            },
             "audio_quality": quality,
             "final_class": final_class,
             "severity": decision["severity"],
@@ -136,6 +148,39 @@ class InferenceService:
         }
 
     def classify_file(self, path: Path, consecutive: int = 1) -> dict[str, Any]:
-        """Load, preprocess, and classify a clip from disk."""
-        y = load_audio(path, self.settings)
-        return self.classify_signal(y, consecutive=consecutive)
+        """Load, preprocess, and classify a clip from disk.
+
+        For clips longer than the fixed window, the clip is segmented (SRS xv):
+        each segment is classified, per-segment results are attached, and the
+        overall result uses the highest-severity / highest-confidence segment.
+        """
+        from sonic.preprocessing import load_raw, segment_signal
+
+        raw = load_raw(path, self.settings)
+        segments = list(segment_signal(raw, self.settings))
+
+        if len(segments) <= 1:
+            result = self.classify_signal(segments[0][0] if segments else load_audio(path, self.settings),
+                                          consecutive=consecutive)
+            result["segments"] = [{
+                "start": segments[0][1] if segments else 0.0,
+                "end": segments[0][2] if segments else 0.0,
+                "class": result["final_class"],
+                "confidence": result["python"]["confidence"],
+            }]
+            return result
+
+        seg_results = []
+        for seg, start, end in segments:
+            r = self.classify_signal(seg, consecutive=consecutive)
+            seg_results.append((r, start, end))
+
+        severity_rank = {"Critical": 5, "High": 4, "Medium": 3, "Low": 2, "Informational": 1}
+        best = max(seg_results, key=lambda t: (
+            severity_rank.get(t[0]["severity"], 0), t[0]["python"]["confidence"]))
+        result = best[0]
+        result["segments"] = [{
+            "start": s, "end": e, "class": r["final_class"],
+            "confidence": r["python"]["confidence"], "severity": r["severity"],
+        } for (r, s, e) in seg_results]
+        return result

@@ -279,7 +279,8 @@ def event_history():
 def reports():
     events = [event_to_view(e) for e in db.list_events(limit=500)]
     return render_template("reports.html", events=events, stats=db.stats(),
-                           category_counts=db.category_counts())
+                           category_counts=db.category_counts(),
+                           severity_counts=db.severity_counts())
 
 
 @app.route("/about")
@@ -287,10 +288,125 @@ def about():
     return render_template("about.html")
 
 
+@app.route("/admin/settings", methods=["GET", "POST"])
+@role_required("Administrator")
+def admin_settings():
+    """Admin page to edit alert thresholds / rules at runtime (SRS xxxv, xxxvi, liii)."""
+    import json as _json
+
+    rules_path = cfg.path("alert_rules")
+    with open(rules_path, "r", encoding="utf-8") as fh:
+        rules = _json.load(fh)
+
+    if request.method == "POST":
+        # Update global defaults.
+        defaults = rules.setdefault("defaults", {})
+        try:
+            defaults["min_confidence"] = float(request.form.get("default_min_confidence", defaults.get("min_confidence", 60)))
+            defaults["top_two_margin"] = float(request.form.get("default_top_two_margin", defaults.get("top_two_margin", 8)))
+        except ValueError:
+            flash("Thresholds must be numbers.", "danger")
+            return redirect(url_for("admin_settings"))
+
+        # Update per-category min_confidence + required_consecutive + severity.
+        for cat, rule in rules.get("categories", {}).items():
+            mc = request.form.get(f"mc_{cat}")
+            rc = request.form.get(f"rc_{cat}")
+            sev = request.form.get(f"sev_{cat}")
+            if mc not in (None, ""):
+                try:
+                    rule["min_confidence"] = float(mc)
+                except ValueError:
+                    pass
+            if rc not in (None, ""):
+                try:
+                    rule["required_consecutive"] = int(rc)
+                except ValueError:
+                    pass
+            if sev:
+                rule["severity"] = sev
+
+        with open(rules_path, "w", encoding="utf-8") as fh:
+            _json.dump(rules, fh, indent=2)
+
+        # Hot-reload the alert engine used by the inference service.
+        svc = get_inference()
+        if svc is not None:
+            from services.alerts import AlertEngine
+            svc.alert_engine = AlertEngine.from_file(rules_path)
+
+        db.audit(session["user"]["email"], "admin_settings", "updated alert rules")
+        flash("Alert rules updated and reloaded.", "success")
+        return redirect(url_for("admin_settings"))
+
+    severities = ["Critical", "High", "Medium", "Low", "Informational"]
+    return render_template("admin_settings.html", rules=rules, severities=severities)
+
+
 # Serve generated media (waveforms/spectrograms) + uploads.
 @app.route("/media/<path:subpath>")
 def media(subpath):
     return send_from_directory(str(cfg.path("visuals_dir")), subpath)
+
+
+@app.route("/audio/<event_id>")
+@login_required
+def event_audio(event_id):
+    """Serve the stored audio clip for an event (reviewer playback, SRS lviii)."""
+    ev = db.get_event(event_id)
+    if not ev or not ev.get("stored_path"):
+        return ("Not found", 404)
+    p = Path(ev["stored_path"])
+    if not p.exists():
+        return ("File missing", 404)
+    return send_from_directory(str(p.parent), p.name)
+
+
+@app.route("/report/<event_id>")
+@login_required
+def event_report(event_id):
+    """Per-event downloadable analysis report (SRS deliverable lxix)."""
+    import json as _json
+
+    ev = db.get_event(event_id)
+    if not ev:
+        flash("Event not found.", "warning")
+        return redirect(url_for("event_history"))
+
+    def _scores(js):
+        try:
+            return sorted(_json.loads(js or "{}").items(), key=lambda kv: kv[1], reverse=True)
+        except Exception:
+            return []
+
+    rows = [
+        ("Audio ID", ev["id"]),
+        ("Filename", ev.get("filename")),
+        ("Source", ev.get("source_mode")),
+        ("Duration", f"{ev.get('duration')}s"),
+        ("Sample rate", f"{ev.get('sample_rate')} Hz"),
+        ("Channels", ev.get("channels")),
+        ("Final class", display_name(ev.get("final_class") or "")),
+        ("Python prediction", f"{ev.get('py_class')} ({ev.get('py_confidence')}%)"),
+        ("GTM prediction", f"{ev.get('gtm_class')} ({ev.get('gtm_confidence')}%)"),
+        ("Model agreement", ev.get("agreement")),
+        ("Confidence difference", f"{ev.get('conf_difference')}%"),
+        ("Top-two margin", f"{ev.get('top_two_margin')}%"),
+        ("Audio quality", ev.get("audio_quality")),
+        ("Severity", ev.get("severity")),
+        ("Alert status", ev.get("alert_status")),
+        ("Manual review", "Yes" if ev.get("manual_review") else "No"),
+        ("Status", ev.get("status")),
+        ("Model versions", ev.get("model_versions")),
+        ("Timestamp", ev.get("created_at")),
+    ]
+    return render_template(
+        "event_report.html", event=ev, rows=rows,
+        py_scores=_scores(ev.get("py_scores_json")),
+        gtm_scores=_scores(ev.get("gtm_scores_json")),
+        waveform_url=_rel_visual(ev.get("waveform_path")) if ev.get("waveform_path") else None,
+        spectrogram_url=_rel_visual(ev.get("spectrogram_path")) if ev.get("spectrogram_path") else None,
+    )
 
 
 # -------------------------------------------------------------------- API
@@ -323,6 +439,10 @@ def _run_and_store(dest: Path, info: dict, source_mode: str) -> dict:
         return {"error": f"Model unavailable: {_inference_error}. Run src/train.py."}
 
     meta = audio_io.extract_metadata(dest)
+
+    # Duplicate detection (SRS lxxiii): flag an identical earlier upload by hash.
+    duplicate_of = db.find_by_hash(info["sha256"])
+
     result = svc.classify_file(dest)
 
     # Visuals.
@@ -372,6 +492,7 @@ def _run_and_store(dest: Path, info: dict, source_mode: str) -> dict:
     result["metadata"] = meta
     result["waveform_url"] = _rel_visual(wave_path)
     result["spectrogram_url"] = _rel_visual(spec_path)
+    result["duplicate_of"] = duplicate_of["id"] if duplicate_of else None
     return result
 
 
@@ -417,20 +538,109 @@ def classify_batch():
     return jsonify({"count": len(results), "results": results})
 
 
+# Per-session live-monitoring state for consecutive-window confirmation (Step 15).
+# Keyed by user email: {"last_class": str, "count": int}.
+_live_state: dict[str, dict] = {}
+
+
 @app.route("/api/classify-live", methods=["POST"])
 @login_required
 def classify_live():
-    """Classify one live microphone window (SRS Step 12)."""
+    """Classify one live microphone window (SRS Step 12 + Step 15 confirmation).
+
+    Live windows are classified continuously but NOT all stored. Only a
+    confirmed critical/high event (after the required number of consecutive
+    windows of the same class) is persisted as an event + alert.
+    """
+    svc = get_inference()
+    if svc is None:
+        return jsonify({"error": f"Model unavailable: {_inference_error}."}), 503
     if "audio" not in request.files:
         return jsonify({"error": "No audio window uploaded."}), 400
     file = request.files["audio"]
+
+    # Save the window (WAV from the browser) and load the signal.
     try:
         dest, info = audio_io.save_upload(file, cfg.path("uploads_dir"))
-        result = _run_and_store(dest, info, "live")
     except audio_io.AudioValidationError as error:
         return jsonify({"error": str(error)}), 400
-    if "error" in result:
-        return jsonify(result), 503
+
+    email = session["user"]["email"]
+    state = _live_state.setdefault(email, {"last_class": None, "count": 0})
+
+    try:
+        settings = AudioSettings.from_config(cfg)
+        y = load_audio(dest, settings)
+    except Exception as error:  # noqa: BLE001
+        # Clean up the tiny window file and report.
+        try:
+            Path(dest).unlink(missing_ok=True)
+        except Exception:
+            pass
+        return jsonify({"error": f"Could not decode window: {error}"}), 400
+
+    # Track consecutive detections of the same class.
+    peek = svc.classify_signal(y, consecutive=1)
+    cls = peek["final_class"]
+    if cls == state["last_class"]:
+        state["count"] += 1
+    else:
+        state["last_class"] = cls
+        state["count"] = 1
+
+    # Re-run the decision with the true consecutive count so Step-15 rules
+    # (e.g. gunshot/aggression require 2 consecutive) are honoured.
+    result = svc.classify_signal(y, consecutive=state["count"])
+    result["consecutive"] = state["count"]
+
+    confirmed = result["alert_fires"]
+    result["confirmed_alert"] = confirmed
+
+    if confirmed:
+        # Persist a confirmed live event + alert, and generate visuals.
+        try:
+            stem = Path(dest).stem
+            wave = visuals.generate_waveform(y, settings.sample_rate,
+                                             cfg.path("visuals_dir") / f"{stem}_wave.png")
+            spec = visuals.generate_spectrogram(y, settings.sample_rate,
+                                                cfg.path("visuals_dir") / f"{stem}_spec.png")
+            event = {
+                "filename": info["filename"], "stored_path": info["stored_path"],
+                "uploaded_by": email, "source_mode": "live",
+                "duration": settings.duration, "sample_rate": settings.sample_rate,
+                "channels": 1, "file_size": info["file_size"], "sha256": info["sha256"],
+                "py_class": result["python"]["predicted_class"],
+                "py_confidence": result["python"]["confidence"],
+                "py_scores_json": result["python"]["scores"],
+                "gtm_class": result["gtm"]["predicted_class"],
+                "gtm_confidence": result["gtm"]["confidence"],
+                "gtm_scores_json": result["gtm"]["scores"],
+                "agreement": result["comparison"]["agreement"],
+                "conf_difference": result["comparison"]["confidence_difference"],
+                "top_two_margin": result["comparison"]["top_two_margin"],
+                "audio_quality": result["audio_quality"]["quality"],
+                "final_class": result["final_class"], "severity": result["severity"],
+                "alert_status": "Active", "manual_review": 1 if result["manual_review"] else 0,
+                "status": "Alert Generated",
+                "waveform_path": str(wave), "spectrogram_path": str(spec),
+                "model_versions": result["model_versions"],
+            }
+            event_id = db.insert_event(event)
+            db.insert_alert(event_id, result["severity"], result["final_class"],
+                            result["recommended_action"])
+            db.audit(email, "live_alert", f"{event_id} -> {result['final_class']}")
+            result["event_id"] = event_id
+            state["count"] = 0  # reset after confirming
+        except Exception as error:  # noqa: BLE001
+            result["store_error"] = str(error)
+    else:
+        # Discard the un-confirmed window file to avoid clutter.
+        try:
+            Path(dest).unlink(missing_ok=True)
+        except Exception:
+            pass
+
+    result["final_class_name"] = display_name(result["final_class"])
     return jsonify(result)
 
 

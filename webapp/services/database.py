@@ -187,6 +187,14 @@ class Database:
             row = conn.execute("SELECT * FROM events WHERE id = ?", (event_id,)).fetchone()
             return dict(row) if row else None
 
+    def find_by_hash(self, sha256_hex) -> dict[str, Any] | None:
+        """Exact-duplicate detection (SRS lxxiii): find an earlier identical upload."""
+        with self._connect() as conn:
+            row = conn.execute(
+                "SELECT * FROM events WHERE sha256 = ? ORDER BY created_at ASC LIMIT 1",
+                (sha256_hex,)).fetchone()
+            return dict(row) if row else None
+
     def list_events(self, limit=200, where=None, params=()) -> list[dict[str, Any]]:
         query = "SELECT * FROM events"
         if where:
@@ -267,6 +275,12 @@ class Database:
             rows = conn.execute(
                 "SELECT final_class, COUNT(*) c FROM events GROUP BY final_class").fetchall()
             return {r["final_class"]: r["c"] for r in rows if r["final_class"]}
+
+    def severity_counts(self) -> dict[str, int]:
+        with self._connect() as conn:
+            rows = conn.execute(
+                "SELECT severity, COUNT(*) c FROM events GROUP BY severity").fetchall()
+            return {r["severity"]: r["c"] for r in rows if r["severity"]}
 
     def stats(self) -> dict[str, Any]:
         with self._connect() as conn:

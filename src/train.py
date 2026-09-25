@@ -55,6 +55,38 @@ def make_estimator(name: str, seed: int):
     raise ValueError(f"unknown model: {name}")
 
 
+def param_grid(name: str) -> dict:
+    """Small hyperparameter grids for tuning (SRS requirement xxiv)."""
+    if name == "svm":
+        return {"C": [1, 10, 50], "gamma": ["scale", 0.01]}
+    if name == "random_forest":
+        return {"n_estimators": [200, 400], "max_depth": [None, 30]}
+    if name == "gradient_boosting":
+        # Gradient boosting is slow to fit on the augmented set; keep a tiny
+        # grid so tuning stays practical (it is not the top performer anyway).
+        return {"n_estimators": [150]}
+    if name == "xgboost":
+        return {"max_depth": [4, 6], "learning_rate": [0.05, 0.1]}
+    return {}
+
+
+def tune_estimator(name: str, seed: int, X, y, enabled: bool):
+    """Return the best estimator after a light GridSearchCV, or a default fit."""
+    est = make_estimator(name, seed)
+    if not enabled:
+        est.fit(X, y)
+        return est, {}
+    from sklearn.model_selection import GridSearchCV
+
+    grid = param_grid(name)
+    if not grid:
+        est.fit(X, y)
+        return est, {}
+    search = GridSearchCV(est, grid, scoring="f1_macro", cv=3, n_jobs=-1)
+    search.fit(X, y)
+    return search.best_estimator_, search.best_params_
+
+
 def evaluate(estimator, X, y_true, class_names):
     from sklearn.metrics import (
         accuracy_score, classification_report, confusion_matrix,
@@ -116,25 +148,26 @@ def main() -> None:
     # -- 1. Compare candidate Python models on validation --
     from sklearn.metrics import accuracy_score, f1_score
 
+    tune = bool(cfg["training"].get("hyperparameter_tuning", True))
     comparison = []
-    best_name, best_est, best_val_f1 = None, None, -1.0
-    print(f"{'model':<20}{'val_acc':>9}{'val_macroF1':>13}")
-    print("-" * 42)
+    best_name, best_est, best_val_f1, best_params = None, None, -1.0, {}
+    print(f"{'model':<20}{'val_acc':>9}{'val_macroF1':>13}  best_params")
+    print("-" * 60)
     for name in cfg["training"]["models"]:
         try:
-            est = make_estimator(name, seed)
+            est, params = tune_estimator(name, seed, X_tr, y_tr, tune)
         except Exception as error:  # noqa: BLE001
             print(f"{name:<20} (unavailable: {error})")
             continue
-        est.fit(X_tr, y_tr)
         vp = est.predict(X_val)
         acc = accuracy_score(y_val, vp)
         f1 = f1_score(y_val, vp, average="macro")
-        comparison.append({"model": name, "val_accuracy": acc, "val_macro_f1": f1})
-        print(f"{name:<20}{acc:>9.3f}{f1:>13.3f}")
+        comparison.append({"model": name, "val_accuracy": acc, "val_macro_f1": f1,
+                           "best_params": params})
+        print(f"{name:<20}{acc:>9.3f}{f1:>13.3f}  {params}")
         if f1 > best_val_f1:
-            best_name, best_est, best_val_f1 = name, est, f1
-    print(f"\nBest Python model: {best_name} (val macro-F1={best_val_f1:.3f})\n")
+            best_name, best_est, best_val_f1, best_params = name, est, f1, params
+    print(f"\nBest Python model: {best_name} (val macro-F1={best_val_f1:.3f}) params={best_params}\n")
 
     # -- 2. Train the independent GTM-substitute model --
     gtm_name = cfg["training"].get("gtm_model", "random_forest")
@@ -143,8 +176,7 @@ def main() -> None:
     if gtm_name == best_name:
         gtm_name = "gradient_boosting" if best_name != "gradient_boosting" else "random_forest"
     print(f"Training GTM-substitute model ({gtm_name}, independent)...")
-    gtm_est = make_estimator(gtm_name, seed + 1)
-    gtm_est.fit(X_tr, y_tr)
+    gtm_est, _ = tune_estimator(gtm_name, seed + 1, X_tr, y_tr, tune)
 
     # -- 3. Evaluate both on the held-out test set --
     py_eval = evaluate(best_est, X_te, y_te, class_names)
@@ -237,9 +269,44 @@ def main() -> None:
     except Exception as error:  # noqa: BLE001
         print(f"(confusion-matrix plot skipped: {error})", file=sys.stderr)
 
+    # --- Per-recording model comparison report (SRS Deliverable 6) ---
+    import csv as _csv
+
+    audio_ids = data["audio_id"] if "audio_id" in data.files else np.array([""] * len(y))
+    test_ids = audio_ids[test_mask]
+    py_pred = best_est.predict(X_te)
+    gtm_pred = gtm_est.predict(X_te)
+    py_proba = best_est.predict_proba(X_te) if hasattr(best_est, "predict_proba") else None
+    gtm_proba = gtm_est.predict_proba(X_te) if hasattr(gtm_est, "predict_proba") else None
+
+    report_rows = []
+    for i in range(len(y_te)):
+        actual = class_names[y_te[i]]
+        py_c = class_names[py_pred[i]]
+        gtm_c = class_names[gtm_pred[i]]
+        py_conf = round(float(py_proba[i][py_pred[i]]) * 100, 2) if py_proba is not None else ""
+        gtm_conf = round(float(gtm_proba[i][gtm_pred[i]]) * 100, 2) if gtm_proba is not None else ""
+        report_rows.append({
+            "audio_id": test_ids[i] if i < len(test_ids) else "",
+            "actual_class": actual,
+            "python_pred": py_c, "python_conf": py_conf,
+            "gtm_pred": gtm_c, "gtm_conf": gtm_conf,
+            "class_match": "yes" if py_c == gtm_c else "no",
+            "conf_difference": round(abs((py_conf or 0) - (gtm_conf or 0)), 2),
+            "python_correct": "yes" if py_c == actual else "no",
+            "gtm_correct": "yes" if gtm_c == actual else "no",
+        })
+
+    report_path = reports_dir / "model_comparison_report.csv"
+    with report_path.open("w", encoding="utf-8", newline="") as fh:
+        writer = _csv.DictWriter(fh, fieldnames=list(report_rows[0].keys()))
+        writer.writeheader()
+        writer.writerows(report_rows)
+
     print(f"Saved Python model -> {models_dir / 'sonicsentinel_model.joblib'}")
     print(f"Saved GTM model    -> {gtm_dir / 'gtm_model.joblib'}")
     print(f"Saved reports      -> {reports_dir}")
+    print(f"Model comparison report ({len(report_rows)} test recordings) -> {report_path}")
 
 
 if __name__ == "__main__":

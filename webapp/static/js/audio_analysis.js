@@ -126,6 +126,12 @@ async function handleFileSelection(file) {
     }
   }
 
+  // Wire the real audio preview element (play/pause/seek/volume) - SRS ix.
+  const preview = document.getElementById('audioPreview');
+  if (preview) {
+    preview.src = URL.createObjectURL(file);
+  }
+
   window.currentAudioFile = file;
 }
 
@@ -189,24 +195,53 @@ async function triggerDualModelInference() {
       deltaEl.textContent = `Δ ${comp.confidence_difference}% - ${comp.agreement}`;
     }
 
+    // Model names (real)
+    if (data.model_versions) {
+      setText('pyModelName', data.model_versions.python || 'scikit-learn model');
+      setText('gtmModelName', data.model_versions.gtm || 'independent second model');
+    }
+
+    // Top-3 predictions for each model (SRS xxxiv)
+    renderTop3('pyTop3', data.top3_python);
+    renderTop3('gtmTop3', data.top3_gtm);
+
+    // Comparison summary (SRS xxxii-xxxiii, xxxvi, xxxix)
+    setText('resAgreement', comp.agreement);
+    setText('resConfDiff', `${comp.confidence_difference}%`);
+    setText('resTopTwo', `${comp.top_two_margin}%`);
+    const overlap = data.overlap || {};
+    setText('resOverlap', overlap.overlapping
+      ? `Yes (${(overlap.classes || []).length} classes)` : 'No');
+    setText('resReview', data.manual_review ? 'Required' : 'No');
+
+    // Extracted metadata (SRS x)
+    const meta = data.metadata || {};
+    setText('valChannels', meta.channels != null ? meta.channels : '-');
+    setText('valBitDepth', meta.bit_depth != null ? `${meta.bit_depth}-bit` : 'n/a');
+    setText('valDuplicate', data.duplicate_of ? `Yes (${data.duplicate_of})` : 'No');
+
     // Audio quality (real)
     setText('valSnrDb', `${quality.snr_db} dB`);
     setText('valClipping', `${quality.clipping_ratio}%`);
-    setText('valBgNoise', `${quality.rms}`);
+    setText('valBgNoise', `${quality.background_noise_level}`);
     setText('valQualityRating', quality.quality);
 
     // Real waveform + spectrogram images from backend
     renderVisual('analysisWaveformImg', data.waveform_url);
     renderVisual('analysisSpectrogramImg', data.spectrogram_url);
-    // Fallback canvas if the page uses a canvas element
-    drawStaticSpectrogram('analysisWaveformCanvas');
 
+    // Per-event downloadable report link (SRS lxix)
+    const reportBtn = document.getElementById('downloadReportBtn');
+    if (reportBtn && data.event_id) {
+      reportBtn.href = `/report/${data.event_id}`;
+      reportBtn.style.display = 'inline-flex';
+    }
+
+    // Keep the preview element in sync (already set on file select)
+    const preview = document.getElementById('audioPreview');
     const playBtn = document.getElementById('playAnalysedAudioBtn');
-    if (playBtn && window.currentAudioFile) {
-      playBtn.onclick = () => {
-        const audio = new Audio(URL.createObjectURL(window.currentAudioFile));
-        audio.play();
-      };
+    if (playBtn && preview) {
+      playBtn.onclick = () => { preview.play(); };
     }
   } catch (err) {
     console.error('Classification error:', err);
@@ -234,6 +269,17 @@ function renderVisual(imgId, url) {
     img.src = url;
     img.style.display = 'block';
   }
+}
+
+function renderTop3(listId, top3) {
+  const el = document.getElementById(listId);
+  if (!el) return;
+  el.innerHTML = '';
+  (top3 || []).forEach(([name, score]) => {
+    const li = document.createElement('li');
+    li.textContent = `${name.replace(/_/g, ' ')} — ${score}%`;
+    el.appendChild(li);
+  });
 }
 
 // 3. Batch Upload (REAL - each file classified by the backend)

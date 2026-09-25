@@ -66,6 +66,43 @@
     </div>
   </div>
 
+  <!-- Live Classification Result Strip (updated every window by the models) -->
+  <div class="card" style="margin-bottom: 24px;">
+    <div class="card-header">
+      <div class="card-title">
+        <i class="fa-solid fa-brain" style="color: var(--accent-cyan);"></i>
+        Live Dual-Model Classification (updated every ~2.5s)
+      </div>
+      <span class="badge badge-info">Real-time</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; font-size: 0.9rem;">
+      <div>
+        <div style="font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-mono);">DETECTED SOUND</div>
+        <strong id="liveResultClass" style="font-size: 1.05rem;">Waiting for audio…</strong>
+      </div>
+      <div>
+        <div style="font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-mono);">PYTHON MODEL</div>
+        <strong id="liveResultPy" style="color: var(--accent-cyan);">—</strong>
+      </div>
+      <div>
+        <div style="font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-mono);">GTM MODEL</div>
+        <strong id="liveResultGtm" style="color: #a855f7;">—</strong>
+      </div>
+      <div>
+        <div style="font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-mono);">AGREEMENT</div>
+        <strong id="liveResultAgreement">—</strong>
+      </div>
+      <div>
+        <div style="font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-mono);">SEVERITY</div>
+        <span id="liveResultSeverity" class="badge badge-info">—</span>
+      </div>
+      <div>
+        <div style="font-size: 0.7rem; color: var(--text-muted); font-family: var(--font-mono);">AUDIO QUALITY</div>
+        <strong id="liveResultQuality">—</strong>
+      </div>
+    </div>
+  </div>
+
   <!-- Visualizer Canvases Grid -->
   <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 30px;">
     

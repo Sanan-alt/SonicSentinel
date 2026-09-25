@@ -62,11 +62,12 @@
         <!-- Annotation & Review Action Row -->
         <div style="display: grid; grid-template-columns: 1fr auto; gap: 15px; align-items: center; padding-top: 14px; border-top: 1px solid var(--border-color);">
           
-          <div style="display: flex; gap: 10px; align-items: center;">
-            <input type="text" id="note-{{ evt.id }}" class="form-control" placeholder="Add forensic operator notes or acoustic remarks..." style="font-size: 0.84rem; padding: 8px 12px;">
-            <button class="btn btn-secondary btn-sm" onclick="window.acousticSynth.playCategorySound('{{ evt.sample_type }}', this)" title="Listen to acoustic recording loop">
-              <i class="fa-solid fa-headphones"></i> Listen Clip
-            </button>
+          <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+            <input type="text" id="note-{{ evt.id }}" class="form-control" placeholder="Reviewer notes / recommended action..." style="font-size: 0.84rem; padding: 8px 12px; flex: 1; min-width: 200px;">
+            <audio controls src="{{ url_for('event_audio', event_id=evt.id) }}" style="height: 34px;"></audio>
+            <a class="btn btn-secondary btn-sm" href="{{ url_for('event_report', event_id=evt.id) }}" target="_blank" title="Full report">
+              <i class="fa-solid fa-file-lines"></i> Report
+            </a>
           </div>
 
           <div style="display: flex; gap: 8px;">

@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block title %}Analysis Report {{ event.id }} | SonicSentinel AI{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 900px;">
+
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
+    <h1 style="font-family: var(--font-display); font-size: 1.9rem; font-weight: 800;">
+      Analysis Report
+    </h1>
+    <button class="btn btn-secondary" onclick="window.print()">
+      <i class="fa-solid fa-print"></i> Print / Save as PDF
+    </button>
+  </div>
+
+  <div class="card" style="margin-bottom: 20px;">
+    <div class="card-header"><div class="card-title">Event {{ event.id }}</div>
+      <span class="badge {% if event.severity in ['Critical','High'] %}badge-danger{% elif event.severity == 'Medium' %}badge-warning{% else %}badge-info{% endif %}">{{ event.severity }}</span>
+    </div>
+    <table style="width:100%; border-collapse: collapse; font-size: 0.9rem;">
+      <tbody>
+        {% for label, value in rows %}
+        <tr style="border-bottom: 1px solid var(--border-color);">
+          <td style="padding: 8px 12px; color: var(--text-muted); width: 40%;">{{ label }}</td>
+          <td style="padding: 8px 12px; font-weight: 600;">{{ value }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card" style="margin-bottom: 20px;">
+    <div class="card-title" style="margin-bottom: 12px;">Per-Model Confidence Scores</div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+      <div>
+        <strong style="color: var(--accent-cyan);">Python model</strong>
+        <ul style="margin-top: 8px; font-size: 0.85rem;">
+          {% for cls, score in py_scores %}<li>{{ cls.replace('_',' ') }}: {{ score }}%</li>{% endfor %}
+        </ul>
+      </div>
+      <div>
+        <strong style="color: #a855f7;">GTM-substitute model</strong>
+        <ul style="margin-top: 8px; font-size: 0.85rem;">
+          {% for cls, score in gtm_scores %}<li>{{ cls.replace('_',' ') }}: {{ score }}%</li>{% endfor %}
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  {% if waveform_url or spectrogram_url %}
+  <div class="card">
+    <div class="card-title" style="margin-bottom: 12px;">Waveform &amp; Spectrogram</div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+      {% if waveform_url %}<img src="{{ waveform_url }}" style="width:100%; border-radius: 8px;">{% endif %}
+      {% if spectrogram_url %}<img src="{{ spectrogram_url }}" style="width:100%; border-radius: 8px;">{% endif %}
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+{% endblock %}

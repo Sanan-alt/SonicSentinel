@@ -91,12 +91,20 @@ def extract_metadata(path: Path) -> dict[str, Any]:
     if duration > MAX_DURATION_S:
         raise AudioValidationError(f"Recording too long ({duration:.1f}s > {MAX_DURATION_S:.0f}s).")
 
+    # Derive bit depth from the subtype where possible (SRS requirement x).
+    bit_depth_map = {
+        "PCM_16": 16, "PCM_24": 24, "PCM_32": 32, "PCM_S8": 8, "PCM_U8": 8,
+        "FLOAT": 32, "DOUBLE": 64,
+    }
+    bit_depth = bit_depth_map.get(str(subtype).upper())
+
     return {
         "duration": round(duration, 3),
         "sample_rate": sr,
         "channels": channels,
         "frames": frames,
         "subtype": subtype,
+        "bit_depth": bit_depth,
         "readable": readable,
     }
 
@@ -136,10 +144,19 @@ def assess_quality(y: np.ndarray, sr: int) -> dict[str, Any]:
     else:
         quality, reason = "Good", "clean"
 
+    # Background-noise level estimate (SRS requirement xiv): the quiet-frame
+    # energy floor, expressed on a 0-100 relative scale.
+    if energies.size:
+        noise_floor = float(np.percentile(energies, 10))
+        background_noise_level = round(min(100.0, noise_floor ** 0.5 * 300), 1)
+    else:
+        background_noise_level = 0.0
+
     return {
         "quality": quality,
         "reason": reason,
         "snr_db": round(snr_db, 1),
         "clipping_ratio": round(clipping_ratio, 2),
         "rms": round(rms, 4),
+        "background_noise_level": background_noise_level,
     }
