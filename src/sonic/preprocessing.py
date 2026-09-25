@@ -1,0 +1,67 @@
+"""Audio preprocessing pipeline (SRS Step 4 / requirement xi).
+
+Steps applied to every clip before feature extraction:
+    load -> mono -> resample -> silence trim -> normalise -> pad/truncate
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+
+import librosa
+import numpy as np
+
+
+@dataclass
+class AudioSettings:
+    sample_rate: int = 22050
+    mono: bool = True
+    duration: float = 5.0
+    top_db: float = 30.0
+    normalize: bool = True
+
+    @classmethod
+    def from_config(cls, cfg) -> "AudioSettings":
+        a = cfg["audio"]
+        return cls(
+            sample_rate=int(a["sample_rate"]),
+            mono=bool(a["mono"]),
+            duration=float(a["duration"]),
+            top_db=float(a["top_db"]),
+            normalize=bool(a["normalize"]),
+        )
+
+
+def load_audio(path, settings: AudioSettings) -> np.ndarray:
+    """Load a clip and apply the full preprocessing chain.
+
+    Returns a 1-D float32 array of exactly ``duration * sample_rate`` samples.
+    Raises ValueError for silent / empty signals so callers can reject them.
+    """
+    y, _ = librosa.load(path, sr=settings.sample_rate, mono=settings.mono)
+    if y.size == 0:
+        raise ValueError("empty audio signal")
+
+    # Silence trimming (leading/trailing).
+    y_trimmed, _ = librosa.effects.trim(y, top_db=settings.top_db)
+    if y_trimmed.size > 0:
+        y = y_trimmed
+
+    # Reject near-silent recordings (SRS silence detection).
+    if float(np.max(np.abs(y))) < 1e-4:
+        raise ValueError("signal is silent or near-silent")
+
+    # Peak normalisation.
+    if settings.normalize:
+        peak = float(np.max(np.abs(y)))
+        if peak > 0:
+            y = y / peak
+
+    # Pad or truncate to a fixed length.
+    target_len = int(settings.duration * settings.sample_rate)
+    if y.shape[0] < target_len:
+        y = np.pad(y, (0, target_len - y.shape[0]), mode="constant")
+    else:
+        y = y[:target_len]
+
+    return y.astype(np.float32)

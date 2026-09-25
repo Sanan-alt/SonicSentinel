@@ -1,0 +1,72 @@
+# SonicSentinel AI - central configuration
+# All paths are relative to the project root.
+
+paths:
+  # Raw source data as delivered.
+  esc50_audio: "Dataset/Dataset/audio"          # ESC-50 original 44.1kHz clips (2000 files)
+  esc50_meta: "esc50.csv"                        # target -> ESC-50 category map
+  mp3_folders:                                   # extra hand-collected mp3 folders
+    aggression: "Dataset/Aggression (1)"
+    glassbreak: "Dataset/Glass breaking"
+  # Generated outputs.
+  # NOTE: C: drive is full on this machine, so heavy generated artefacts live
+  # on D:. Change output_root to a path on any drive with free space.
+  output_root: "D:/sonicsentinel_data"
+  categorized: "categorized_audio"               # organised copies by SRS class (under output_root)
+  metadata_csv: "dataset_metadata.csv"           # SRS dataset metadata (under output_root)
+  features_file: "features.npz"                  # extracted acoustic features (under output_root)
+  models_dir: "python_models"                    # saved models + preprocessing pipeline (under output_root)
+  reports_dir: "reports"                          # metrics, confusion matrices, plots (under output_root)
+
+# Audio preprocessing settings (SRS Step 4 / xi).
+audio:
+  sample_rate: 22050        # target resample rate (Hz)
+  mono: true                # stereo -> mono
+  duration: 5.0             # fixed clip length in seconds (pad/truncate)
+  top_db: 30                # silence trimming threshold
+  normalize: true           # peak amplitude normalisation
+
+# The 10 mandatory SRS sound classes (fixed order = model label order).
+classes:
+  - machinery_fault
+  - glass_breaking
+  - alarm_siren
+  - vehicle_horn
+  - animal_sound
+  - gunshot
+  - panic_scream
+  - person_asking_for_help
+  - aggression
+  - background_noise
+
+# Classes treated as critical for recall reporting (SRS NFR-4).
+critical_classes:
+  - gunshot
+  - glass_breaking
+  - panic_scream
+  - aggression
+  - person_asking_for_help
+
+# Stratified split ratios (SRS: 70/15/15).
+split:
+  train: 0.70
+  val: 0.15
+  test: 0.15
+  seed: 42
+
+# Feature extraction settings (SRS Step 6 / xx).
+features:
+  n_mfcc: 40
+  n_mels: 128
+  n_fft: 2048
+  hop_length: 512
+
+# Training settings.
+training:
+  seed: 42
+  # Models to compare (SRS Step 7: at least three).
+  models:
+    - svm
+    - random_forest
+    - gradient_boosting
+    - xgboost
