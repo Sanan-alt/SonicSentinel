@@ -109,15 +109,30 @@ def login_required(fn):
     return wrapper
 
 
+def _norm_role(role: str) -> str:
+    """Normalise a role to a slug so seed slugs and display strings both match.
+
+    e.g. 'Audio reviewer' -> 'audio_reviewer', 'administrator' -> 'administrator'.
+    """
+    return (role or "").strip().lower().replace(" ", "_")
+
+
 def role_required(*roles):
+    allowed = {_norm_role(r) for r in roles} | {"administrator"}
+
     def decorator(fn):
         @wraps(fn)
         def wrapper(*args, **kwargs):
             user = session.get("user")
+            wants_json = request.path.startswith("/api/")
             if not user:
+                if wants_json:
+                    return jsonify({"error": "Login required."}), 401
                 flash("Please log in to continue.", "warning")
                 return redirect(url_for("login"))
-            if roles and user.get("role") not in roles and user.get("role") != "Administrator":
+            if _norm_role(user.get("role")) not in allowed:
+                if wants_json:
+                    return jsonify({"error": "You do not have permission for this action."}), 403
                 flash("You do not have permission to access that page.", "danger")
                 return redirect(url_for("dashboard"))
             return fn(*args, **kwargs)
@@ -234,8 +249,15 @@ def audio_analysis():
 @app.route("/critical-events")
 @login_required
 def critical_events():
-    rows = db.list_events(limit=200, where="severity = ?", params=("Critical",))
-    return render_template("critical_events.html", events=[event_to_view(e) for e in rows])
+    rows = db.list_events(limit=200, where="severity IN ('Critical','High')")
+    events = []
+    for e in rows:
+        view = event_to_view(e)
+        alert = db.alert_for_event(e["id"])
+        view["alert_id"] = alert["id"] if alert else None
+        view["alert_state"] = alert["status"] if alert else None
+        events.append(view)
+    return render_template("critical_events.html", events=events)
 
 
 @app.route("/manual-review")

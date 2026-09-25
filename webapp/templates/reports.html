@@ -19,9 +19,9 @@
       <button class="btn btn-secondary" onclick="window.print()">
         <i class="fa-solid fa-print"></i> Print Report
       </button>
-      <button class="btn btn-primary" onclick="simulatePdfDownload()">
-        <i class="fa-solid fa-file-pdf"></i> Download PDF Summary
-      </button>
+      <a class="btn btn-primary" href="{{ url_for('export_csv') }}">
+        <i class="fa-solid fa-file-csv"></i> Export CSV (Data)
+      </a>
     </div>
   </div>
 
@@ -33,39 +33,39 @@
         Total Processed Audio Clips
       </div>
       <div style="font-size: 2.2rem; font-weight: 800; font-family: var(--font-display); color: var(--accent-cyan); margin: 6px 0;">
-        128,490
+        {{ stats.total_events }}
       </div>
-      <div style="font-size: 0.78rem; color: var(--color-safe);"><i class="fa-solid fa-arrow-trend-up"></i> +14.2% from last month</div>
+      <div style="font-size: 0.78rem; color: var(--color-safe);"><i class="fa-solid fa-database"></i> Live from event database</div>
     </div>
 
     <div class="card">
       <div style="font-size: 0.76rem; color: var(--text-muted); font-family: var(--font-mono); text-transform: uppercase;">
-        Verified Threat Precision
+        Average Model Confidence
       </div>
       <div style="font-size: 2.2rem; font-weight: 800; font-family: var(--font-display); color: var(--color-safe); margin: 6px 0;">
-        98.6%
+        {{ stats.avg_confidence }}%
       </div>
-      <div style="font-size: 0.78rem; color: var(--text-secondary);">False alarm rate &lt; 1.4%</div>
+      <div style="font-size: 0.78rem; color: var(--text-secondary);">Model disagreements: {{ stats.model_disagreements }}</div>
     </div>
 
     <div class="card">
       <div style="font-size: 0.76rem; color: var(--text-muted); font-family: var(--font-mono); text-transform: uppercase;">
-        High-Priority Critical Alerts
+        Critical Events
       </div>
       <div style="font-size: 2.2rem; font-weight: 800; font-family: var(--font-display); color: var(--color-critical); margin: 6px 0;">
-        42
+        {{ stats.critical_events }}
       </div>
-      <div style="font-size: 0.78rem; color: var(--text-secondary);">Gunshots, Screams, Glass</div>
+      <div style="font-size: 0.78rem; color: var(--text-secondary);">Gunshots, Screams, Glass, Aggression</div>
     </div>
 
     <div class="card">
       <div style="font-size: 0.76rem; color: var(--text-muted); font-family: var(--font-mono); text-transform: uppercase;">
-        Avg Dual Model Consensus
+        Manual Reviews / Poor Quality
       </div>
       <div style="font-size: 2.2rem; font-weight: 800; font-family: var(--font-display); color: #a855f7; margin: 6px 0;">
-        94.8%
+        {{ stats.manual_reviews }}
       </div>
-      <div style="font-size: 0.78rem; color: var(--text-secondary);">Python vs Teachable Machine</div>
+      <div style="font-size: 0.78rem; color: var(--text-secondary);">Poor-quality clips: {{ stats.poor_quality }}</div>
     </div>
 
   </div>
@@ -84,34 +84,25 @@
       </div>
 
       <div style="display: flex; flex-direction: column; gap: 14px;">
-        
-        {% set demo_stats = [
-          ('Gunshot', 8, 'danger'),
-          ('Panic Scream', 12, 'danger'),
-          ('Glass Breaking', 10, 'danger'),
-          ('Aggression or Violent Conflict', 14, 'danger'),
-          ('Person Asking for Help', 9, 'danger'),
-          ('Machinery Fault', 15, 'warning'),
-          ('Alarm or Siren', 11, 'warning'),
-          ('Vehicle Horn', 18, 'info'),
-          ('Animal Sound', 16, 'safe'),
-          ('Background Noise', 35, 'secondary')
-        ] %}
-
-        {% for name, pct, col in demo_stats %}
-          <div>
-            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px;">
-              <span>{{ name }}</span>
-              <span style="font-family: var(--font-mono);">{{ pct }}%</span>
-            </div>
-            <div style="height: 8px; background: var(--bg-input); border-radius: 6px; overflow: hidden;">
-              <div style="height: 100%; width: {{ pct }}%; 
-                background: {% if col == 'danger' %}var(--color-critical){% elif col == 'warning' %}var(--color-warning){% elif col == 'info' %}var(--accent-cyan){% elif col == 'safe' %}var(--color-safe){% else %}var(--text-muted){% endif %};">
+        {% set total = (category_counts.values() | sum) or 1 %}
+        {% if category_counts %}
+          {% for cat, count in category_counts.items() %}
+            {% set pct = ((count / total) * 100) | round(1) %}
+            <div>
+              <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px;">
+                <span>{{ cat | replace('_', ' ') | title }}</span>
+                <span style="font-family: var(--font-mono);">{{ count }} ({{ pct }}%)</span>
+              </div>
+              <div style="height: 8px; background: var(--bg-input); border-radius: 6px; overflow: hidden;">
+                <div style="height: 100%; width: {{ pct }}%; background: var(--accent-cyan);"></div>
               </div>
             </div>
-          </div>
-        {% endfor %}
-
+          {% endfor %}
+        {% else %}
+          <p style="color: var(--text-secondary); font-size: 0.9rem;">
+            No events yet. Analyze audio clips to populate live category statistics.
+          </p>
+        {% endif %}
       </div>
     </div>
 

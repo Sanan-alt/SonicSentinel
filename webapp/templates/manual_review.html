@@ -70,10 +70,10 @@
           </div>
 
           <div style="display: flex; gap: 8px;">
-            <button class="btn btn-sm btn-primary" onclick="markReviewed('{{ evt.id }}', 'Verified')">
+            <button class="btn btn-sm btn-primary" onclick="submitReview('{{ evt.id }}', 'Confirmed')">
               <i class="fa-solid fa-check"></i> Verify Event
             </button>
-            <button class="btn btn-sm btn-outline-danger" onclick="markReviewed('{{ evt.id }}', 'False Alarm')">
+            <button class="btn btn-sm btn-outline-danger" onclick="submitReview('{{ evt.id }}', 'Corrected')">
               <i class="fa-solid fa-xmark"></i> Reject (False Alarm)
             </button>
           </div>
@@ -87,21 +87,47 @@
 </div>
 
 <script>
-function markReviewed(eventId, action) {
+async function submitReview(eventId, decision) {
+  const noteEl = document.getElementById(`note-${eventId}`);
+  const comment = noteEl ? noteEl.value : '';
   const card = document.getElementById(`review-card-${eventId}`);
-  if (card) {
-    card.style.transition = 'all 0.4s ease';
-    card.style.opacity = '0.4';
-    card.style.transform = 'translateX(20px)';
-    setTimeout(() => {
-      card.innerHTML = `
-        <div style="padding: 16px; text-align: center; color: var(--color-safe); font-weight: 600;">
-          <i class="fa-solid fa-circle-check"></i> Incident ${eventId} successfully marked as <strong>${action}</strong>.
-        </div>
-      `;
-      card.style.opacity = '1';
-      card.style.transform = 'none';
-    }, 400);
+
+  let corrected_class = null;
+  if (decision === 'Corrected') {
+    corrected_class = prompt(
+      'Enter the correct category key (e.g. background_noise, glass_breaking), or leave blank to just reject:',
+      'background_noise'
+    ) || null;
+  }
+
+  try {
+    const res = await fetch('/api/reviews', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event_id: eventId, decision, corrected_class, comment })
+    });
+    const data = await res.json();
+    if (!res.ok || data.error) {
+      alert('Review failed: ' + (data.error || 'permission denied'));
+      return;
+    }
+    if (card) {
+      card.style.transition = 'all 0.4s ease';
+      card.style.opacity = '0.4';
+      card.style.transform = 'translateX(20px)';
+      setTimeout(() => {
+        card.innerHTML = `
+          <div style="padding: 16px; text-align: center; color: var(--color-safe); font-weight: 600;">
+            <i class="fa-solid fa-circle-check"></i> Incident ${eventId} reviewed and saved as
+            <strong>${decision}</strong>.
+          </div>`;
+        card.style.opacity = '1';
+        card.style.transform = 'none';
+      }, 400);
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Review request failed. Is the server running?');
   }
 }
 </script>

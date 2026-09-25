@@ -64,14 +64,32 @@
           </div>
         </div>
 
+        {% if evt.alert_id %}
+        <div style="font-size: 0.76rem; color: var(--text-muted); margin-bottom: 8px;" id="alert-state-{{ evt.alert_id }}">
+          Alert status: <strong>{{ evt.alert_state }}</strong>
+        </div>
+        {% endif %}
+
         <!-- Actions -->
-        <div style="display: flex; gap: 8px;">
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
           <button class="btn btn-sm btn-secondary" style="flex: 1;" onclick="window.acousticSynth.playCategorySound('{{ evt.sample_type }}', this)">
-            <i class="fa-solid fa-play"></i> Play Sample
+            <i class="fa-solid fa-play"></i> Play
           </button>
+          {% if evt.alert_id %}
+          <button class="btn btn-sm btn-primary" onclick="alertAction('{{ evt.alert_id }}', 'acknowledge')">
+            <i class="fa-solid fa-check"></i> Acknowledge
+          </button>
+          <button class="btn btn-sm btn-danger" onclick="alertAction('{{ evt.alert_id }}', 'escalate')">
+            <i class="fa-solid fa-arrow-up-right-dots"></i> Escalate
+          </button>
+          <button class="btn btn-sm btn-outline-danger" onclick="alertAction('{{ evt.alert_id }}', 'dismiss')">
+            <i class="fa-solid fa-xmark"></i> Dismiss
+          </button>
+          {% else %}
           <a href="{{ url_for('manual_review') }}" class="btn btn-sm btn-primary" style="flex: 1;">
             <i class="fa-solid fa-user-check"></i> Operator Review
           </a>
+          {% endif %}
         </div>
 
       </div>
@@ -86,6 +104,24 @@ function triggerSimulatedEmergency() {
     window.acousticSynth.playCategorySound('siren');
   }
   alert("EMERGENCY PROTOCOL BROADCAST: High decibel acoustic alarm triggered across all monitoring stations.");
+}
+
+async function alertAction(alertId, action) {
+  try {
+    const res = await fetch(`/api/alerts/${alertId}/${action}`, { method: 'POST' });
+    const data = await res.json();
+    if (!res.ok || data.error) {
+      alert('Action failed: ' + (data.error || 'unknown'));
+      return;
+    }
+    const stateEl = document.getElementById(`alert-state-${alertId}`);
+    if (stateEl) {
+      stateEl.innerHTML = `Alert status: <strong>${data.status}</strong>`;
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Request failed. Is the server running?');
+  }
 }
 </script>
 {% endblock %}

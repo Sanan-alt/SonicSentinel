@@ -214,6 +214,13 @@ class Database:
             )
         return aid
 
+    def alert_for_event(self, event_id) -> dict[str, Any] | None:
+        with self._connect() as conn:
+            row = conn.execute(
+                "SELECT * FROM alerts WHERE event_id = ? ORDER BY created_at DESC LIMIT 1",
+                (event_id,)).fetchone()
+            return dict(row) if row else None
+
     def list_alerts(self, status=None, limit=200) -> list[dict[str, Any]]:
         with self._connect() as conn:
             if status:
