@@ -5,11 +5,17 @@ data/categorized_audio/
 Dataset/audio/
 Dataset/categorized_audio/
 
-# ---- Generated ML artefacts ----
+# ---- Generated ML artefacts + runtime data ----
 *.npz
 python_models/
+gtm_model/
 reports/
 sonicsentinel_data/
+uploads/
+visuals/
+*.db
+*.sqlite
+*.sqlite3
 
 # ---- Extracted / temporary working files ----
 srs_text.txt

@@ -1,0 +1,108 @@
+{% extends 'base.html' %}
+
+{% block title %}Operator Verification &amp; Manual Review Queue | SonicSentinel AI{% endblock %}
+
+{% block content %}
+<div class="container">
+  
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 15px;">
+    <div>
+      <h1 style="font-family: var(--font-display); font-size: 2.2rem; font-weight: 800; margin-bottom: 4px;">
+        Operator Manual Review Studio
+      </h1>
+      <p style="color: var(--text-secondary); font-size: 0.92rem;">
+        Human-in-the-loop acoustic verification, false-positive mitigation, and forensic tagging.
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 10px;">
+      <span class="badge badge-warning" style="font-size: 0.85rem; padding: 6px 12px;">
+        {{ events|length }} Unverified Incidents In Queue
+      </span>
+    </div>
+  </div>
+
+  <!-- Review Cards -->
+  <div style="display: flex; flex-direction: column; gap: 20px; margin-bottom: 40px;">
+    {% for evt in events %}
+      <div class="card" id="review-card-{{ evt.id }}">
+        
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 15px; margin-bottom: 16px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+              <span style="font-family: var(--font-mono); font-weight: 700; color: var(--text-accent);">{{ evt.id }}</span>
+              <span class="badge {% if evt.severity == 'Critical' %}badge-danger{% else %}badge-warning{% endif %}">{{ evt.severity }}</span>
+              <span class="badge badge-info">{{ evt.status }}</span>
+            </div>
+            <h3 style="font-family: var(--font-display); font-size: 1.4rem; font-weight: 800;">
+              {{ evt.category }}
+            </h3>
+            <div style="color: var(--text-secondary); font-size: 0.84rem; margin-top: 2px;">
+              <i class="fa-solid fa-location-dot"></i> {{ evt.location }} &bull; Recorded: {{ evt.timestamp }} &bull; Duration: {{ evt.duration }}
+            </div>
+          </div>
+
+          <!-- Dual Model Scores Mini -->
+          <div style="display: flex; gap: 16px; background: var(--bg-secondary); padding: 10px 16px; border-radius: 12px; border: 1px solid var(--border-color); font-family: var(--font-mono); font-size: 0.82rem;">
+            <div>
+              <span style="color: var(--text-muted); font-size: 0.7rem; display: block;">PYTHON RESNET</span>
+              <strong style="color: var(--accent-cyan);">{{ evt.confidence_py }}%</strong>
+            </div>
+            <div>
+              <span style="color: var(--text-muted); display: block; font-size: 0.7rem;">TEACHABLE M.</span>
+              <strong style="color: #a855f7;">{{ evt.confidence_tm }}%</strong>
+            </div>
+            <div>
+              <span style="color: var(--text-muted); display: block; font-size: 0.7rem;">SNR</span>
+              <strong style="color: var(--color-safe);">{{ evt.snr_db }} dB</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- Annotation & Review Action Row -->
+        <div style="display: grid; grid-template-columns: 1fr auto; gap: 15px; align-items: center; padding-top: 14px; border-top: 1px solid var(--border-color);">
+          
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <input type="text" id="note-{{ evt.id }}" class="form-control" placeholder="Add forensic operator notes or acoustic remarks..." style="font-size: 0.84rem; padding: 8px 12px;">
+            <button class="btn btn-secondary btn-sm" onclick="window.acousticSynth.playCategorySound('{{ evt.sample_type }}', this)" title="Listen to acoustic recording loop">
+              <i class="fa-solid fa-headphones"></i> Listen Clip
+            </button>
+          </div>
+
+          <div style="display: flex; gap: 8px;">
+            <button class="btn btn-sm btn-primary" onclick="markReviewed('{{ evt.id }}', 'Verified')">
+              <i class="fa-solid fa-check"></i> Verify Event
+            </button>
+            <button class="btn btn-sm btn-outline-danger" onclick="markReviewed('{{ evt.id }}', 'False Alarm')">
+              <i class="fa-solid fa-xmark"></i> Reject (False Alarm)
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+    {% endfor %}
+  </div>
+
+</div>
+
+<script>
+function markReviewed(eventId, action) {
+  const card = document.getElementById(`review-card-${eventId}`);
+  if (card) {
+    card.style.transition = 'all 0.4s ease';
+    card.style.opacity = '0.4';
+    card.style.transform = 'translateX(20px)';
+    setTimeout(() => {
+      card.innerHTML = `
+        <div style="padding: 16px; text-align: center; color: var(--color-safe); font-weight: 600;">
+          <i class="fa-solid fa-circle-check"></i> Incident ${eventId} successfully marked as <strong>${action}</strong>.
+        </div>
+      `;
+      card.style.opacity = '1';
+      card.style.transform = 'none';
+    }, 400);
+  }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,570 @@
+{% extends 'base.html' %}
+
+{% block title %}SonicSentinel | Real-Time AI Acoustic Security &amp; Threat Detection{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <!-- HERO SECTION (Inspired by Reference Design) -->
+  <section class="hero-section" style="padding: 40px 0 50px;">
+    <div style="display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 40px; align-items: center;">
+
+      <!-- Hero Left: Headlines & Value Prop -->
+      <div>
+        <div
+          style="display: inline-flex; align-items: center; gap: 8px; background: rgba(6, 182, 212, 0.12); border: 1px solid rgba(6, 182, 212, 0.3); padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; color: var(--text-accent); margin-bottom: 24px;">
+          <span
+            style="width: 7px; height: 7px; background: var(--accent-cyan); border-radius: 50%; box-shadow: 0 0 8px var(--accent-cyan);"></span>
+          NEXT-GEN AI ACOUSTIC THREAT DETECTION &bull; EDGE &amp; CLOUD
+        </div>
+
+        <h1
+          style="font-family: var(--font-display); font-size: 3.4rem; font-weight: 800; line-height: 1.08; letter-spacing: -0.03em; margin-bottom: 20px;">
+          The camera sees.<br>
+          <span
+            style="background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            SonicSentinel hears.
+          </span>
+        </h1>
+
+        <p
+          style="font-size: 1.12rem; color: var(--text-secondary); max-width: 580px; line-height: 1.6; margin-bottom: 32px;">
+          Instant real-time acoustic intelligence for security infrastructure. Detect gunshots, screams, aggression,
+          machinery failures, and alarms under 400ms without recording conversational privacy.
+        </p>
+
+        <div style="display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 40px;">
+          <a href="{{ url_for('live_monitor') }}" class="btn btn-lg btn-primary">
+            <i class="fa-solid fa-microphone-lines"></i> Launch Live Monitor
+          </a>
+          <a href="{{ url_for('audio_analysis') }}" class="btn btn-lg btn-secondary">
+            <i class="fa-solid fa-cloud-arrow-up"></i> Analyze Audio File
+          </a>
+          <a href="#video-demo-section" class="btn btn-lg btn-secondary">
+            <i class="fa-solid fa-circle-play"></i> Watch Video Demo
+          </a>
+        </div>
+
+        <!-- Trust Badges -->
+        <div
+          style="display: flex; gap: 28px; font-size: 0.82rem; color: var(--text-muted); font-family: var(--font-mono); flex-wrap: wrap;">
+          <div><strong style="color: var(--text-primary); font-size: 1.1rem; display: block;">&lt; 400ms</strong>
+            Latency</div>
+          <div><strong style="color: var(--text-primary); font-size: 1.1rem; display: block;">10 Classes</strong>
+            Mandatory</div>
+          <div><strong style="color: var(--text-primary); font-size: 1.1rem; display: block;">Dual AI</strong> Python
+            &amp; Teachable</div>
+          <div><strong style="color: var(--text-primary); font-size: 1.1rem; display: block;">100%</strong> Privacy
+            Compliant</div>
+        </div>
+      </div>
+
+      <!-- Hero Right: Live Radar Card & The Signature Digital Wave Animation -->
+      <div>
+        <div class="hero-radar-card">
+
+          <!-- Radar Header -->
+          <div class="radar-header">
+            <span class="radar-status-live">RADAR.LIVESTREAM</span>
+            <span class="radar-city-tag"><i class="fa-solid fa-location-dot"></i> SECTOR METRO-CENTRAL</span>
+          </div>
+
+          <div>
+            <span class="radar-units-badge">
+              <span style="width: 6px; height: 6px; background: #10b981; border-radius: 50%;"></span>
+              1482 Active Units Online
+            </span>
+            <span class="radar-api-tag">LIVE REST API</span>
+          </div>
+
+          <!-- SIGNATURE GLOWING DIGITAL AUDIO WAVE ANIMATION -->
+          <div class="digital-wave-container" id="digitalWaveContainer" title="Live Acoustic Spectrum Wave">
+            <!-- Dynamically animated by wave_animation.js -->
+          </div>
+
+          <!-- Radar Detections Feed (Like Reference Website) -->
+          <div class="radar-events-stream">
+            {% for evt in recent_events %}
+            <div class="radar-event-item">
+              <div class="event-item-left">
+                <div class="event-category-title">
+                  <span>{{ evt.category }}</span>
+                  <span class="badge {% if evt.severity == 'Critical' %}badge-danger{% else %}badge-warning{% endif %}">
+                    {{ evt.severity }}
+                  </span>
+                </div>
+                <div class="event-location">
+                  <i class="fa-solid fa-location-crosshairs"></i> {{ evt.location }} &bull; {{ evt.timestamp }}
+                </div>
+              </div>
+
+              <div class="event-item-right">
+                <span class="event-confidence-badge">
+                  {{ evt.confidence_py }}%
+                </span>
+                <!-- Synthesizer Play Button -->
+                <button class="play-audio-btn" title="Play audio preview"
+                  onclick="window.acousticSynth.playCategorySound('{{ evt.sample_type }}', this)">
+                  <i class="fa-solid fa-play"></i>
+                </button>
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- PHOTOGRAPHIC THREAT CLASSIFICATION CARDS (Inspired by Reference Screenshot 3) -->
+  <section style="margin: 30px 0 60px;">
+    <div style="text-align: center; max-width: 750px; margin: 0 auto 30px;">
+      <span class="badge badge-info" style="margin-bottom: 8px;">INTELLIGENT IMPULSE RECOGNITION</span>
+      <h2 style="font-family: var(--font-display); font-size: 2.2rem; font-weight: 800;">
+        Detect Threats Before They Escalate
+      </h2>
+      <p style="color: var(--text-secondary); font-size: 0.95rem;">
+        Advanced neural networks trained on hundreds of thousands of real acoustic impulse profiles, providing immediate
+        situational awareness.
+      </p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 22px;">
+
+      <!-- Card 1: Gunshot & Explosions -->
+      <div class="card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+        <div style="height: 180px; overflow: hidden; position: relative;">
+          <img src="{{ url_for('static', filename='images/gunshot.jpg') }}" alt="Gunshot Detection"
+            style="width: 100%; height: 100%; object-fit: cover; transition: transform var(--transition-normal);">
+          <div style="position: absolute; top: 12px; right: 12px;">
+            <span class="badge badge-danger"><i class="fa-solid fa-crosshairs"></i> CRITICAL</span>
+          </div>
+        </div>
+        <div style="padding: 20px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <h3
+              style="font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-bullseye" style="color: var(--color-critical);"></i> Gunshot &amp; Explosions
+            </h3>
+            <p style="color: var(--text-secondary); font-size: 0.82rem; line-height: 1.5; margin-bottom: 14px;">
+              Instant identification of supersonic ballistic cracks and muzzle blast reverberations under 350ms,
+              auto-slewing PTZ municipal cameras to source coordinates.
+            </p>
+          </div>
+          <button class="btn btn-sm btn-secondary" onclick="window.acousticSynth.playCategorySound('gunshot', this)"
+            style="width: 100%;">
+            <i class="fa-solid fa-volume-high"></i> Play Gunshot Sample
+          </button>
+        </div>
+      </div>
+
+      <!-- Card 2: Glass Break Detection -->
+      <div class="card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+        <div style="height: 180px; overflow: hidden; position: relative;">
+          <img src="{{ url_for('static', filename='images/glass_break.jpg') }}" alt="Glass Break Detection"
+            style="width: 100%; height: 100%; object-fit: cover; transition: transform var(--transition-normal);">
+          <div style="position: absolute; top: 12px; right: 12px;">
+            <span class="badge badge-danger"><i class="fa-solid fa-burst"></i> CRITICAL</span>
+          </div>
+        </div>
+        <div style="padding: 20px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <h3
+              style="font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-shield-halved" style="color: var(--color-critical);"></i> Glass Break Detection
+            </h3>
+            <p style="color: var(--text-secondary); font-size: 0.82rem; line-height: 1.5; margin-bottom: 14px;">
+              Acoustic AI detection of tempered and plate glass fractures for commercial storefronts, banking
+              perimeters, and vehicle vandalism prevention.
+            </p>
+          </div>
+          <button class="btn btn-sm btn-secondary"
+            onclick="window.acousticSynth.playCategorySound('glass_breaking', this)" style="width: 100%;">
+            <i class="fa-solid fa-volume-high"></i> Play Glass Shatter Sample
+          </button>
+        </div>
+      </div>
+
+      <!-- Card 3: Drone & UAV Perimeter -->
+      <div class="card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+        <div style="height: 180px; overflow: hidden; position: relative;">
+          <img src="{{ url_for('static', filename='images/drone.jpg') }}" alt="Drone Acoustic Tracking"
+            style="width: 100%; height: 100%; object-fit: cover; transition: transform var(--transition-normal);">
+          <div style="position: absolute; top: 12px; right: 12px;">
+            <span class="badge badge-warning"><i class="fa-solid fa-triangle-exclamation"></i> PERIMETER</span>
+          </div>
+        </div>
+        <div style="padding: 20px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <h3
+              style="font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-helicopter" style="color: var(--color-warning);"></i> Drone &amp; UAV Perimeter
+            </h3>
+            <p style="color: var(--text-secondary); font-size: 0.82rem; line-height: 1.5; margin-bottom: 14px;">
+              360-degree acoustic tracking of multi-rotor propeller harmonics and drone motors for critical airfields,
+              correctional facilities, and private airspace.
+            </p>
+          </div>
+          <button class="btn btn-sm btn-secondary" onclick="window.acousticSynth.playCategorySound('siren', this)"
+            style="width: 100%;">
+            <i class="fa-solid fa-volume-high"></i> Play Perimeter Alarm
+          </button>
+        </div>
+      </div>
+
+      <!-- Card 4: Scream & Aggression -->
+      <div class="card" style="padding: 0; overflow: hidden; display: flex; flex-direction: column;">
+        <div style="height: 180px; overflow: hidden; position: relative;">
+          <img src="{{ url_for('static', filename='images/scream.jpg') }}" alt="Scream and Aggression Detection"
+            style="width: 100%; height: 100%; object-fit: cover; transition: transform var(--transition-normal);">
+          <div style="position: absolute; top: 12px; right: 12px;">
+            <span class="badge badge-danger"><i class="fa-solid fa-hand-fist"></i> CRITICAL</span>
+          </div>
+        </div>
+        <div style="padding: 20px; flex: 1; display: flex; flex-direction: column; justify-content: space-between;">
+          <div>
+            <h3
+              style="font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; margin-bottom: 6px; display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-person-falling-burst" style="color: var(--color-critical);"></i> Scream &amp;
+              Aggression
+            </h3>
+            <p style="color: var(--text-secondary); font-size: 0.82rem; line-height: 1.5; margin-bottom: 14px;">
+              Neural identification of human distress pitch, terror shrieks, elevated aggressive shouting, and physical
+              altercations for rapid de-escalation.
+            </p>
+          </div>
+          <button class="btn btn-sm btn-secondary"
+            onclick="window.acousticSynth.playCategorySound('panic_scream', this)" style="width: 100%;">
+            <i class="fa-solid fa-volume-high"></i> Play Scream Sample
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- VIDEO DEMONSTRATIONS & MEDIA SECTION (Inspired by Reference Screenshot 2) -->
+  <section id="video-demo-section" style="margin: 50px 0 70px;">
+    <div
+      style="display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 15px;">
+      <div>
+        <span class="badge badge-info" style="margin-bottom: 8px;">FIELD DEMONSTRATIONS &amp; MEDIA</span>
+        <h2 style="font-family: var(--font-display); font-size: 2rem; font-weight: 800;">
+          SonicSentinel in Action: Video Demonstrations
+        </h2>
+        <p style="color: var(--text-secondary); font-size: 0.95rem;">
+          Watch tactical live-fire field trials, television news features, and emergency automated response
+          demonstrations.
+        </p>
+      </div>
+      <div>
+        <button class="btn btn-primary" onclick="openVideoPlayerModal()">
+          <i class="fa-solid fa-film"></i> Add / View Project Video
+        </button>
+      </div>
+    </div>
+
+    <!-- Video Cards Grid -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 24px;">
+
+      <!-- Video 1: Broadcast News Demonstration -->
+      <div class="card" style="padding: 0; overflow: hidden;">
+        <div style="position: relative; height: 220px; overflow: hidden; cursor: pointer;"
+          onclick="openVideoPlayerModal()">
+          <img src="{{ url_for('static', filename='images/video_demo.jpg') }}" alt="TV News Report Demonstration"
+            style="width: 100%; height: 100%; object-fit: cover;">
+          <div
+            style="position: absolute; inset: 0; background: rgba(0, 0, 0, 0.35); display: flex; align-items: center; justify-content: center; transition: background var(--transition-fast);">
+            <div
+              style="width: 58px; height: 58px; border-radius: 50%; background: #ef4444; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; box-shadow: 0 0 24px rgba(239, 68, 68, 0.7); transition: transform var(--transition-fast);">
+              <i class="fa-solid fa-play" style="margin-left: 4px;"></i>
+            </div>
+          </div>
+          <span
+            style="position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,0.8); color: white; padding: 3px 8px; border-radius: 6px; font-family: var(--font-mono); font-size: 0.74rem;">04:18</span>
+        </div>
+        <div style="padding: 20px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <span class="badge badge-info"><i class="fa-solid fa-tv"></i> GLOBAL NEWS / ČT24</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Field Security Assessment</span>
+          </div>
+          <h3 style="font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; margin-bottom: 8px;">
+            Acoustic Event Detection: Live City Deployment
+          </h3>
+          <p style="color: var(--text-secondary); font-size: 0.85rem; line-height: 1.6; margin-bottom: 16px;">
+            Special audio sensors deployed in municipal transit corridors dispatched police response units in under
+            400ms following panic scream and glass fracture triggers.
+          </p>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <button class="btn btn-sm btn-secondary" onclick="openVideoPlayerModal()">
+              <i class="fa-solid fa-circle-play"></i> Watch Full Demo Video
+            </button>
+            <span style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">HD &bull;
+              1080p</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Video 2: Tactical Gunshot & PTZ Tracking -->
+      <div class="card" style="padding: 0; overflow: hidden;">
+        <div style="position: relative; height: 220px; overflow: hidden; cursor: pointer;"
+          onclick="openVideoPlayerModal()">
+          <img src="{{ url_for('static', filename='images/gunshot.jpg') }}" alt="Gunshot Detection & PTZ Slew"
+            style="width: 100%; height: 100%; object-fit: cover;">
+          <div
+            style="position: absolute; inset: 0; background: rgba(0, 0, 0, 0.35); display: flex; align-items: center; justify-content: center;">
+            <div
+              style="width: 58px; height: 58px; border-radius: 50%; background: #ef4444; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; box-shadow: 0 0 24px rgba(239, 68, 68, 0.7);">
+              <i class="fa-solid fa-play" style="margin-left: 4px;"></i>
+            </div>
+          </div>
+          <span
+            style="position: absolute; bottom: 12px; right: 12px; background: rgba(0,0,0,0.8); color: white; padding: 3px 8px; border-radius: 6px; font-family: var(--font-mono); font-size: 0.74rem;">06:45</span>
+        </div>
+        <div style="padding: 20px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
+            <span class="badge badge-danger"><i class="fa-solid fa-crosshairs"></i> TACTICAL FIELD DEMO</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Live Ballistic Crack</span>
+          </div>
+          <h3 style="font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; margin-bottom: 8px;">
+            Gunshot Blast Detection &amp; PTZ Auto-Tracking
+          </h3>
+          <p style="color: var(--text-secondary); font-size: 0.85rem; line-height: 1.6; margin-bottom: 16px;">
+            Field testing demonstration showing SonicSentinel detecting live firearm discharges, calculating sound
+            azimuth, and instantly locking surrounding cameras onto the shooter.
+          </p>
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <button class="btn btn-sm btn-secondary" onclick="openVideoPlayerModal()">
+              <i class="fa-solid fa-circle-play"></i> Watch Tactical Demo
+            </button>
+            <span style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">4K 60FPS</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 10 MANDATORY SOUND CATEGORIES SECTION -->
+  <section style="margin: 50px 0 70px;">
+    <div
+      style="display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 15px;">
+      <div>
+        <span class="badge badge-info" style="margin-bottom: 8px;">MANDATORY SPECIFICATIONS</span>
+        <h2 style="font-family: var(--font-display); font-size: 2rem; font-weight: 700;">
+          10 Acoustic Event Detection Categories
+        </h2>
+        <p style="color: var(--text-secondary); font-size: 0.95rem;">
+          Engineered for high-speed edge security, machinery diagnostics, and panic hazard alerting.
+        </p>
+      </div>
+      <div>
+        <a href="{{ url_for('audio_analysis') }}" class="btn btn-sm btn-secondary">
+          <i class="fa-solid fa-flask"></i> Test Model Inference
+        </a>
+      </div>
+    </div>
+
+    <!-- 10 Categories Cards Grid -->
+    <div class="categories-grid">
+      {% for cat in sound_categories %}
+      <div class="category-card">
+        <div class="cat-top">
+          <div class="cat-icon-box {{ cat.badge_color }}">
+            <i class="fa-solid {{ cat.icon }}"></i>
+          </div>
+          <span
+            class="badge {% if cat.severity == 'Critical' %}badge-danger{% elif cat.severity == 'Warning' %}badge-warning{% elif cat.severity == 'Moderate' %}badge-info{% else %}badge-secondary{% endif %}">
+            {{ cat.severity }}
+          </span>
+        </div>
+
+        <div class="cat-name">{{ cat.name }}</div>
+        <div class="cat-desc">{{ cat.description }}</div>
+
+        <div class="cat-threshold-bar">
+          <div style="display: flex; justify-content: space-between;">
+            <span>Detection Threshold</span>
+            <span>{{ (cat.default_threshold * 100)|int }}%</span>
+          </div>
+          <div class="threshold-track">
+            <div class="threshold-fill" style="width: {{ (cat.default_threshold * 100)|int }}%;"></div>
+          </div>
+        </div>
+
+        <!-- Play category demo sound -->
+        <button class="btn btn-sm btn-secondary" style="margin-top: 6px; width: 100%;"
+          onclick="window.acousticSynth.playCategorySound('{{ cat.category_key }}', this)">
+          <i class="fa-solid fa-volume-high"></i> Play Sound Preview
+        </button>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+
+</div>
+
+<!-- VIDEO PLAYER MODAL -->
+<div id="videoModal"
+  style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.85); backdrop-filter: blur(10px); z-index: 1000; align-items: center; justify-content: center; padding: 20px;">
+  <div
+    style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 18px; max-width: 840px; width: 100%; overflow: hidden; box-shadow: var(--shadow-lg);">
+
+    <div
+      style="display: flex; align-items: center; justify-content: space-between; padding: 16px 22px; border-bottom: 1px solid var(--border-color);">
+      <h3
+        style="font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; margin: 0; display: flex; align-items: center; gap: 10px;">
+        <i class="fa-solid fa-circle-play" style="color: #ef4444;"></i> SonicSentinel Project Video Presentation
+      </h3>
+      <button onclick="closeVideoPlayerModal()"
+        style="background: none; border: none; color: var(--text-primary); font-size: 1.2rem; cursor: pointer;">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div style="padding: 20px;">
+      <!-- Video Display Container -->
+      <div id="videoDisplayArea"
+        style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; background: #070d18; border: 1px solid var(--border-color); display: flex; align-items: center; justify-content: center;">
+        
+        <!-- Placeholder Slot when no video is attached -->
+        <div id="videoPlaceholder"
+          style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; background: radial-gradient(circle at center, rgba(14, 165, 233, 0.08) 0%, rgba(7, 13, 24, 0.95) 100%);">
+          <div
+            style="width: 62px; height: 62px; border-radius: 50%; background: rgba(14, 165, 233, 0.12); border: 1px solid rgba(14, 165, 233, 0.35); display: flex; align-items: center; justify-content: center; font-size: 1.6rem; color: var(--accent-cyan); margin-bottom: 14px;">
+            <i class="fa-solid fa-video"></i>
+          </div>
+          <h4 style="font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; margin-bottom: 6px;">
+            Project Presentation Video Slot
+          </h4>
+          <p style="color: var(--text-secondary); font-size: 0.88rem; max-width: 480px; margin-bottom: 18px; line-height: 1.5;">
+            Yahan aap apni project ki video ka link attach kar sakte hain preview dekhne ke liye.
+          </p>
+          <div style="display: flex; gap: 8px; width: 100%; max-width: 500px; flex-wrap: wrap; justify-content: center;">
+            <input type="text" id="videoUrlInput" class="form-control"
+              placeholder="Paste your video URL or embed link here..."
+              style="flex: 1; min-width: 250px; font-size: 0.88rem;">
+            <button class="btn btn-primary" onclick="loadCustomVideo()" style="white-space: nowrap;">
+              <i class="fa-solid fa-play"></i> Attach &amp; Play
+            </button>
+          </div>
+        </div>
+
+        <!-- Video Player Frame (Only active when user provides a link) -->
+        <iframe id="videoPlayerIframe" style="display: none; position: absolute; top:0; left: 0; width: 100%; height: 100%; border: 0;"
+          src="" title="Project Video Player"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen></iframe>
+      </div>
+
+      <div
+        style="margin-top: 16px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <button id="resetVideoBtn" class="btn btn-sm btn-secondary" onclick="resetVideoPlayer()" style="display: none;">
+            <i class="fa-solid fa-arrow-rotate-left"></i> Change Video URL
+          </button>
+          <span style="color: var(--text-muted); font-size: 0.8rem;">
+            <i class="fa-solid fa-shield-halved"></i> No third-party default video attached.
+          </span>
+        </div>
+        <button class="btn btn-sm btn-secondary" onclick="closeVideoPlayerModal()">
+          Close Player
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/wave_animation.js') }}"></script>
+<script>
+  function openVideoPlayerModal(videoUrl = '') {
+    const modal = document.getElementById('videoModal');
+    const iframe = document.getElementById('videoPlayerIframe');
+    const placeholder = document.getElementById('videoPlaceholder');
+    const resetBtn = document.getElementById('resetVideoBtn');
+    
+    if (modal) {
+      modal.style.display = 'flex';
+      if (videoUrl && videoUrl.trim() !== '') {
+        if (iframe) {
+          iframe.src = videoUrl.trim();
+          iframe.style.display = 'block';
+        }
+        if (placeholder) placeholder.style.display = 'none';
+        if (resetBtn) resetBtn.style.display = 'inline-flex';
+      } else {
+        if (iframe && (!iframe.src || iframe.src === 'about:blank' || iframe.src === window.location.href)) {
+          iframe.style.display = 'none';
+          if (placeholder) placeholder.style.display = 'flex';
+          if (resetBtn) resetBtn.style.display = 'none';
+        }
+      }
+    }
+  }
+
+  function loadCustomVideo() {
+    const input = document.getElementById('videoUrlInput');
+    const iframe = document.getElementById('videoPlayerIframe');
+    const placeholder = document.getElementById('videoPlaceholder');
+    const resetBtn = document.getElementById('resetVideoBtn');
+    
+    if (input && input.value.trim() !== '') {
+      let url = input.value.trim();
+      if (url.includes('youtube.com/watch?v=')) {
+        const videoId = url.split('v=')[1]?.split('&')[0];
+        if (videoId) url = `https://www.youtube-nocookie.com/embed/${videoId}`;
+      } else if (url.includes('youtu.be/')) {
+        const videoId = url.split('youtu.be/')[1]?.split('?')[0];
+        if (videoId) url = `https://www.youtube-nocookie.com/embed/${videoId}`;
+      }
+      if (iframe) {
+        iframe.src = url;
+        iframe.style.display = 'block';
+      }
+      if (placeholder) placeholder.style.display = 'none';
+      if (resetBtn) resetBtn.style.display = 'inline-flex';
+    }
+  }
+
+  function resetVideoPlayer() {
+    const iframe = document.getElementById('videoPlayerIframe');
+    const placeholder = document.getElementById('videoPlaceholder');
+    const resetBtn = document.getElementById('resetVideoBtn');
+    const input = document.getElementById('videoUrlInput');
+    
+    if (iframe) {
+      iframe.src = '';
+      iframe.style.display = 'none';
+    }
+    if (placeholder) placeholder.style.display = 'flex';
+    if (resetBtn) resetBtn.style.display = 'none';
+    if (input) input.value = '';
+  }
+
+  function closeVideoPlayerModal() {
+    const modal = document.getElementById('videoModal');
+    const iframe = document.getElementById('videoPlayerIframe');
+    if (modal) {
+      modal.style.display = 'none';
+      if (iframe && iframe.style.display !== 'none') {
+        const currentSrc = iframe.src;
+        iframe.src = '';
+        iframe.src = currentSrc;
+      }
+    }
+  }
+
+  // Close modal when clicking outside
+  window.addEventListener('click', function(e) {
+    const modal = document.getElementById('videoModal');
+    if (e.target === modal) {
+      closeVideoPlayerModal();
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}SonicSentinel | Real-Time AI Acoustic Threat Detection{% endblock %}</title>
+  
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='images/favicon.svg') }}">
+  <link rel="alternate icon" href="{{ url_for('static', filename='images/favicon.svg') }}">
+
+  <!-- FontAwesome 6 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Custom Core Styles & Visualizer Styles (v2.4 Cache Busting) -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=2.4">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/visualizer.css') }}?v=2.4">
+  
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+  <!-- Primary Navigation Bar (Ref: Modern Acoustic Security Header) -->
+  <header class="navbar">
+    <div class="nav-container">
+      <!-- Brand Logo -->
+      <a href="{{ url_for('index') }}" class="nav-brand">
+        <div class="brand-icon-box">
+          <i class="fa-solid fa-wave-square"></i>
+        </div>
+        <div class="brand-title">
+          <span>SonicSentinel</span>
+          <span class="tagline">Acoustic Security AI</span>
+        </div>
+      </a>
+
+      <!-- Desktop & Mobile Navigation Menu -->
+      <nav class="nav-menu" id="navMenu">
+        <ul class="nav-links">
+          <li><a href="{{ url_for('index') }}" class="{% if request.endpoint == 'index' %}active{% endif %}" title="Home"><i class="fa-solid fa-house"></i> <span>Home</span></a></li>
+          <li><a href="{{ url_for('about') }}" class="{% if request.endpoint == 'about' %}active{% endif %}" title="About Us"><i class="fa-solid fa-circle-info"></i> <span>About</span></a></li>
+          <li><a href="{{ url_for('dashboard') }}" class="{% if request.endpoint == 'dashboard' %}active{% endif %}" title="Threat Dashboard"><i class="fa-solid fa-chart-line"></i> <span>Dashboard</span></a></li>
+          <li><a href="{{ url_for('live_monitor') }}" class="{% if request.endpoint == 'live_monitor' %}active{% endif %}" title="Live Audio Sentinel"><i class="fa-solid fa-microphone-lines"></i> <span>Monitor</span></a></li>
+          <li><a href="{{ url_for('audio_analysis') }}" class="{% if request.endpoint == 'audio_analysis' %}active{% endif %}" title="AI Audio Analysis"><i class="fa-solid fa-file-waveform"></i> <span>Analysis</span></a></li>
+          <li><a href="{{ url_for('critical_events') }}" class="{% if request.endpoint == 'critical_events' %}active{% endif %}" title="Critical Alerts"><i class="fa-solid fa-triangle-exclamation"></i> <span>Alerts</span></a></li>
+          <li><a href="{{ url_for('manual_review') }}" class="{% if request.endpoint == 'manual_review' %}active{% endif %}" title="Human-in-the-Loop Review"><i class="fa-solid fa-user-check"></i> <span>Review</span></a></li>
+          <li><a href="{{ url_for('event_history') }}" class="{% if request.endpoint == 'event_history' %}active{% endif %}" title="Incident Logs"><i class="fa-solid fa-clock-rotate-left"></i> <span>History</span></a></li>
+          <li><a href="{{ url_for('reports') }}" class="{% if request.endpoint == 'reports' %}active{% endif %}" title="Acoustic Intelligence Reports"><i class="fa-solid fa-chart-pie"></i> <span>Reports</span></a></li>
+        </ul>
+      </nav>
+
+      <!-- Right Nav: Day / Night Mode Switcher (Symbols Only), User Auth Status & Mobile Toggle -->
+      <div class="nav-right">
+        <!-- Interactive Day / Night Switcher Capsule (Symbols Only) -->
+        <div id="themeToggleBtn" class="day-night-switch is-night" role="button" tabindex="0" title="Toggle Day / Night Mode">
+          <div class="switch-slider"></div>
+          <div class="switch-opt switch-day" title="Day Mode (Light)">
+            <i class="fa-solid fa-sun"></i>
+          </div>
+          <div class="switch-opt switch-night" title="Night Mode (Dark)">
+            <i class="fa-solid fa-moon"></i>
+          </div>
+        </div>
+
+        {% if current_user %}
+          <!-- Logged In User Pill -->
+          <a href="{{ url_for('profile') }}" class="user-nav-badge" title="Manage Profile: {{ current_user.name }}">
+            <div class="user-avatar-mini">{{ current_user.name[0] }}</div>
+            <div class="user-badge-text">
+              <div style="font-weight: 600; line-height: 1;">{{ current_user.name.split()[0] }}</div>
+              <span class="user-role-pill">{{ current_user.role }}</span>
+            </div>
+          </a>
+          <a href="{{ url_for('logout') }}" class="btn btn-sm btn-secondary" title="Sign Out">
+            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+          </a>
+        {% else %}
+          <!-- Login & Register Links -->
+          <a href="{{ url_for('login') }}" class="btn btn-sm btn-secondary nav-auth-btn" title="Sign In">
+            <i class="fa-solid fa-lock"></i> <span>Sign In</span>
+          </a>
+          <a href="{{ url_for('register') }}" class="btn btn-sm btn-primary nav-auth-btn" title="Register">
+            <i class="fa-solid fa-user-plus"></i> <span>Register</span>
+          </a>
+        {% endif %}
+
+        <!-- Mobile & Narrow Screen Hamburger Toggle Button -->
+        <button class="nav-toggle-btn" id="navToggleBtn" type="button" aria-label="Toggle Navigation Menu">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Flash Messages -->
+  <div class="flash-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            <span><i class="fa-solid fa-circle-info"></i> {{ message }}</span>
+            <button onclick="this.parentElement.remove()" style="background:none; border:none; color:inherit; cursor:pointer;">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- Page Content -->
+  <main class="main-wrapper">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- RICH ENTERPRISE FOOTER WITH COPYRIGHT CLAIM & DETAILS -->
+  <footer class="footer">
+    <div class="container">
+      
+      <!-- Top 4-Column Section -->
+      <div style="display: grid; grid-template-columns: 2fr 1fr 1.2fr 1.4fr; gap: 40px; margin-bottom: 36px; padding-bottom: 30px; border-bottom: 1px solid var(--border-color);">
+        
+        <!-- Col 1: Brand & Mission -->
+        <div>
+          <div class="nav-brand" style="margin-bottom: 14px;">
+            <div class="brand-icon-box" style="width: 34px; height: 34px; font-size: 1rem;">
+              <i class="fa-solid fa-wave-square"></i>
+            </div>
+            <div class="brand-title" style="font-size: 1.15rem;">
+              <span>SonicSentinel</span>
+              <span class="tagline">Acoustic Security AI</span>
+            </div>
+          </div>
+          <p style="color: var(--text-secondary); font-size: 0.84rem; line-height: 1.6; margin-bottom: 16px;">
+            The digital ear for critical security infrastructure. SonicSentinel delivers real-time acoustic threat recognition, gunshot detection, screaming analysis, and emergency camera auto-slewing under 400ms without recording human speech conversations.
+          </p>
+          <div style="display: flex; gap: 12px; font-size: 0.8rem; color: var(--text-muted);">
+            <span><i class="fa-solid fa-shield-halved" style="color: var(--color-safe);"></i> 100% GDPR Certified</span>
+            <span><i class="fa-solid fa-microchip" style="color: var(--accent-cyan);"></i> Edge &amp; Cloud Ready</span>
+          </div>
+        </div>
+
+        <!-- Col 2: Navigation Links -->
+        <div>
+          <h4 style="font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-bottom: 14px;">
+            Operations
+          </h4>
+          <ul style="list-style: none; display: flex; flex-direction: column; gap: 9px; font-size: 0.84rem; color: var(--text-secondary);">
+            <li><a href="{{ url_for('index') }}" style="transition: color var(--transition-fast);"><i class="fa-solid fa-angle-right" style="font-size: 0.7rem; color: var(--accent-cyan);"></i> Home Overview</a></li>
+            <li><a href="{{ url_for('about') }}" style="transition: color var(--transition-fast);"><i class="fa-solid fa-angle-right" style="font-size: 0.7rem; color: var(--accent-cyan);"></i> About Us &amp; Team</a></li>
+            <li><a href="{{ url_for('dashboard') }}" style="transition: color var(--transition-fast);"><i class="fa-solid fa-angle-right" style="font-size: 0.7rem; color: var(--accent-cyan);"></i> Live Operations</a></li>
+            <li><a href="{{ url_for('live_monitor') }}" style="transition: color var(--transition-fast);"><i class="fa-solid fa-angle-right" style="font-size: 0.7rem; color: var(--accent-cyan);"></i> Live Mic Sentinel</a></li>
+            <li><a href="{{ url_for('audio_analysis') }}" style="transition: color var(--transition-fast);"><i class="fa-solid fa-angle-right" style="font-size: 0.7rem; color: var(--accent-cyan);"></i> Dual-Model Analysis</a></li>
+            <li><a href="{{ url_for('critical_events') }}" style="transition: color var(--transition-fast);"><i class="fa-solid fa-angle-right" style="font-size: 0.7rem; color: var(--accent-cyan);"></i> Critical Alerts</a></li>
+          </ul>
+        </div>
+
+        <!-- Col 3: 10 Mandatory Classes -->
+        <div>
+          <h4 style="font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-bottom: 14px;">
+            Acoustic Categories
+          </h4>
+          <ul style="list-style: none; display: grid; grid-template-columns: 1fr; gap: 7px; font-size: 0.82rem; color: var(--text-secondary);">
+            <li><span style="color: var(--color-critical);">&bull;</span> Gunshots &amp; Explosions</li>
+            <li><span style="color: var(--color-critical);">&bull;</span> Panic Screams &amp; Shrieks</li>
+            <li><span style="color: var(--color-critical);">&bull;</span> Glass Break Detection</li>
+            <li><span style="color: var(--color-critical);">&bull;</span> Violent Aggression &amp; Conflict</li>
+            <li><span style="color: var(--color-critical);">&bull;</span> Person Asking for Help</li>
+            <li><span style="color: var(--color-warning);">&bull;</span> Alarms &amp; Oscillating Sirens</li>
+            <li><span style="color: var(--color-warning);">&bull;</span> Machinery &amp; Bearing Faults</li>
+            <li><span style="color: var(--color-moderate);">&bull;</span> Vehicle Klaxons &amp; Horns</li>
+          </ul>
+        </div>
+
+        <!-- Col 4: Privacy & Compliance Certification -->
+        <div>
+          <h4 style="font-family: var(--font-display); font-size: 0.95rem; font-weight: 700; color: var(--text-primary); margin-bottom: 14px;">
+            Privacy &amp; Certifications
+          </h4>
+          <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px; font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 12px;">
+            <strong style="color: var(--text-primary); display: block; margin-bottom: 4px;">
+              <i class="fa-solid fa-lock" style="color: var(--accent-cyan);"></i> Zero Speech Transcription
+            </strong>
+            SonicSentinel processes strictly mathematical spectrogram vectors in volatile RAM. No audio files or conversations are recorded or stored, guaranteeing 100% GDPR, HIPAA, and CCPA privacy compliance.
+          </div>
+          <div style="font-size: 0.78rem; color: var(--text-muted); font-family: var(--font-mono);">
+            Compatible with Axis ACAP, Hanwha HEOP, Milestone XProtect &amp; Genetec VMS.
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Copyright & Legal Disclaimer Row -->
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; font-size: 0.8rem; color: var(--text-muted);">
+        <div>
+          &copy; 2026 <strong>SonicSentinel AI Inc.</strong> All rights reserved. 
+          <span style="display: inline-block; margin-left: 10px; color: var(--text-muted);">
+            Proprietary AI Acoustic Threat Detection &amp; Early Warning System.
+          </span>
+        </div>
+
+        <div style="display: flex; gap: 20px; font-size: 0.8rem;">
+          <a href="#" style="color: var(--text-secondary); transition: color var(--transition-fast);">Privacy Policy</a>
+          <a href="#" style="color: var(--text-secondary); transition: color var(--transition-fast);">Terms of Service</a>
+          <a href="#" style="color: var(--text-secondary); transition: color var(--transition-fast);">Security Architecture</a>
+          <a href="#" style="color: var(--text-secondary); transition: color var(--transition-fast);">GDPR Declaration</a>
+          <span style="color: var(--color-safe); display: flex; align-items: center; gap: 6px;">
+            <span style="width: 6px; height: 6px; background: var(--color-safe); border-radius: 50%;"></span>
+            System Status: 100% Operational
+          </span>
+        </div>
+      </div>
+
+    </div>
+  </footer>
+
+  <!-- Core Scripts -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/audio_synth.js') }}"></script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

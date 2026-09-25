@@ -1,0 +1,160 @@
+{% extends 'base.html' %}
+
+{% block title %}Acoustic Audit Log &amp; Event History | SonicSentinel AI{% endblock %}
+
+{% block content %}
+<div class="container">
+  
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 15px;">
+    <div>
+      <h1 style="font-family: var(--font-display); font-size: 2.2rem; font-weight: 800; margin-bottom: 4px;">
+        Acoustic Event Audit Log
+      </h1>
+      <p style="color: var(--text-secondary); font-size: 0.92rem;">
+        Complete historical trail of classified sounds, confidence comparisons, and forensic timestamps.
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 10px;">
+      <button class="btn btn-secondary" onclick="exportAuditCSV()">
+        <i class="fa-solid fa-file-csv"></i> Export CSV Log
+      </button>
+      <a href="{{ url_for('reports') }}" class="btn btn-primary">
+        <i class="fa-solid fa-chart-pie"></i> View Reports
+      </a>
+    </div>
+  </div>
+
+  <!-- Search & Filter Controls -->
+  <div class="card" style="margin-bottom: 24px; padding: 18px;">
+    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 15px;">
+      
+      <div style="position: relative;">
+        <input type="text" id="historySearch" class="form-control" placeholder="Search by Event ID, Category, or Location..." oninput="filterHistoryTable()">
+      </div>
+
+      <div>
+        <select id="severityFilter" class="form-select" onchange="filterHistoryTable()">
+          <option value="">All Severities</option>
+          <option value="Critical">Critical</option>
+          <option value="Warning">Warning</option>
+          <option value="Moderate">Moderate</option>
+          <option value="Ambient">Ambient</option>
+        </select>
+      </div>
+
+      <div>
+        <select id="categoryFilter" class="form-select" onchange="filterHistoryTable()">
+          <option value="">All 10 Categories</option>
+          {% for cat in sound_categories %}
+            <option value="{{ cat.name }}">{{ cat.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Audit Table -->
+  <div class="card">
+    <div style="overflow-x: auto;">
+      <table id="historyTable" style="width: 100%; border-collapse: collapse; font-size: 0.88rem; text-align: left;">
+        <thead>
+          <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-family: var(--font-mono); font-size: 0.75rem;">
+            <th style="padding: 12px;">INCIDENT ID</th>
+            <th style="padding: 12px;">CATEGORY (10 CLASSES)</th>
+            <th style="padding: 12px;">SEVERITY</th>
+            <th style="padding: 12px;">PYTHON MODEL</th>
+            <th style="padding: 12px;">TEACHABLE M.</th>
+            <th style="padding: 12px;">LOCATION</th>
+            <th style="padding: 12px;">STATUS</th>
+            <th style="padding: 12px; text-align: right;">AUDIO</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for evt in events %}
+            <tr class="history-row" data-category="{{ evt.category }}" data-severity="{{ evt.severity }}" style="border-bottom: 1px solid var(--border-color);">
+              <td style="padding: 12px; font-family: var(--font-mono); font-weight: 700; color: var(--text-accent);">
+                {{ evt.id }}
+                <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: normal;">{{ evt.timestamp }}</div>
+              </td>
+              <td style="padding: 12px; font-weight: 700;">
+                {{ evt.category }}
+              </td>
+              <td style="padding: 12px;">
+                <span class="badge {% if evt.severity == 'Critical' %}badge-danger{% elif evt.severity == 'Warning' %}badge-warning{% elif evt.severity == 'Moderate' %}badge-info{% else %}badge-secondary{% endif %}">
+                  {{ evt.severity }}
+                </span>
+              </td>
+              <td style="padding: 12px; font-family: var(--font-mono); font-weight: 600; color: var(--accent-cyan);">
+                {{ evt.confidence_py }}%
+              </td>
+              <td style="padding: 12px; font-family: var(--font-mono); font-weight: 600; color: #a855f7;">
+                {{ evt.confidence_tm }}%
+              </td>
+              <td style="padding: 12px; color: var(--text-secondary); font-size: 0.82rem;">
+                {{ evt.location }}
+              </td>
+              <td style="padding: 12px;">
+                <span class="badge badge-safe">{{ evt.status }}</span>
+              </td>
+              <td style="padding: 12px; text-align: right;">
+                <button class="play-audio-btn" style="width: 30px; height: 30px; font-size: 0.72rem;" onclick="window.acousticSynth.playCategorySound('{{ evt.sample_type }}', this)" title="Play acoustic sample">
+                  <i class="fa-solid fa-play"></i>
+                </button>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function filterHistoryTable() {
+  const search = document.getElementById('historySearch').value.toLowerCase();
+  const sev = document.getElementById('severityFilter').value;
+  const cat = document.getElementById('categoryFilter').value;
+  
+  const rows = document.querySelectorAll('.history-row');
+  rows.forEach(r => {
+    const text = r.textContent.toLowerCase();
+    const rowSev = r.getAttribute('data-severity');
+    const rowCat = r.getAttribute('data-category');
+
+    const matchesSearch = text.includes(search);
+    const matchesSev = !sev || rowSev === sev;
+    const matchesCat = !cat || rowCat === cat;
+
+    r.style.display = (matchesSearch && matchesSev && matchesCat) ? '' : 'none';
+  });
+}
+
+function exportAuditCSV() {
+  let csv = "ID,Category,Severity,Python_Confidence,TeachableMachine_Confidence,Location,Status\n";
+  const rows = document.querySelectorAll('.history-row');
+  rows.forEach(r => {
+    const cols = r.querySelectorAll('td');
+    if (cols.length >= 7) {
+      const id = cols[0].innerText.split('\n')[0].trim();
+      const cat = cols[1].innerText.trim();
+      const sev = cols[2].innerText.trim();
+      const py = cols[3].innerText.trim();
+      const tm = cols[4].innerText.trim();
+      const loc = `"${cols[5].innerText.trim()}"`;
+      const status = cols[6].innerText.trim();
+      csv += `${id},${cat},${sev},${py},${tm},${loc},${status}\n`;
+    }
+  });
+
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `SonicSentinel_Acoustic_Audit_${Date.now()}.csv`;
+  a.click();
+}
+</script>
+{% endblock %}

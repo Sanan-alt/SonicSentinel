@@ -1,7 +1,12 @@
 """Extract acoustic features for every organised clip (SRS Step 6 / requirement xx).
 
-Reads data/dataset_metadata.csv, preprocesses each clip, extracts a fixed
-feature vector, and saves everything to a single .npz for fast training.
+Reads the dataset metadata, preprocesses each clip, extracts a fixed feature
+vector, and saves everything to a single .npz for fast training.
+
+Training-split clips are additionally augmented (SRS requirement xix): each
+train clip yields ``augmentation.per_clip`` extra augmented feature vectors,
+tagged augmented=True and kept in the SAME split as the parent. Validation and
+test clips are never augmented.
 
 Run:
     python src/extract_features.py
@@ -18,6 +23,7 @@ import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from sonic.augmentation import augment
 from sonic.config import load_config
 from sonic.features import extract_features, feature_names
 from sonic.preprocessing import AudioSettings, load_audio
@@ -34,15 +40,25 @@ def main() -> None:
     meta = pd.read_csv(meta_path)
     out_root = cfg.output_root
     total = len(meta)
+
+    aug_cfg = cfg.get("augmentation", {}) or {}
+    aug_enabled = bool(aug_cfg.get("enabled", False))
+    aug_per_clip = int(aug_cfg.get("per_clip", 0))
+    aug_methods = list(aug_cfg.get("methods", []))
+    rng = np.random.default_rng(int(cfg["split"]["seed"]))
+
     print(f"Extracting features for {total} clips (sr={settings.sample_rate}, "
-          f"dur={settings.duration}s)...")
+          f"dur={settings.duration}s). Augmentation="
+          f"{'on' if aug_enabled else 'off'} (x{aug_per_clip} on train).")
 
     vectors: list[np.ndarray] = []
     labels: list[str] = []
     audio_ids: list[str] = []
     splits: list[str] = []
     sources: list[str] = []
+    augmented: list[bool] = []
     failures = 0
+    aug_count = 0
     start = time.time()
 
     for i, row in meta.iterrows():
@@ -54,16 +70,36 @@ def main() -> None:
             failures += 1
             print(f"  skip {row['audio_id']} ({clip_path.name}): {error}", file=sys.stderr)
             continue
+
+        # Original clip.
         vectors.append(vec)
         labels.append(row["class_label"])
         audio_ids.append(row["audio_id"])
         splits.append(row["split"])
         sources.append(row["source"])
+        augmented.append(False)
+
+        # Augmented copies (train split only).
+        if aug_enabled and aug_per_clip > 0 and row["split"] == "train" and aug_methods:
+            for _ in range(aug_per_clip):
+                method = str(rng.choice(aug_methods))
+                try:
+                    y_aug = augment(y, settings.sample_rate, method, rng)
+                    vec_aug = extract_features(y_aug, settings.sample_rate, cfg)
+                except Exception:  # noqa: BLE001
+                    continue
+                vectors.append(vec_aug)
+                labels.append(row["class_label"])
+                audio_ids.append(row["audio_id"])   # same Audio ID as parent
+                splits.append("train")
+                sources.append(f"aug:{method}")
+                augmented.append(True)
+                aug_count += 1
 
         done = i + 1
         if done % 200 == 0 or done == total:
             elapsed = time.time() - start
-            print(f"  {done}/{total} processed ({elapsed:.0f}s)")
+            print(f"  {done}/{total} originals processed, {aug_count} augmented ({elapsed:.0f}s)")
 
     if not vectors:
         print("No features extracted.", file=sys.stderr)
@@ -79,10 +115,13 @@ def main() -> None:
         audio_id=np.array(audio_ids),
         split=np.array(splits),
         source=np.array(sources),
+        augmented=np.array(augmented),
         feature_names=np.array(feature_names(cfg)),
     )
 
+    n_orig = int(np.sum(~np.array(augmented)))
     print(f"\nSaved {X.shape[0]} feature vectors of dim {X.shape[1]} -> {features_path}")
+    print(f"  originals: {n_orig}   augmented: {aug_count}")
     print(f"Failed/skipped clips: {failures}")
 
 

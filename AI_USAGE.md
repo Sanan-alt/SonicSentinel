@@ -11,9 +11,11 @@ during development are declared here.
 
 ## How AI Was Used
 
-- Generating and refactoring boilerplate Python code for the pipeline modules.
+- Generating and refactoring Python code for the ML pipeline modules.
+- Building the Flask backend (database, auth, upload/validation, dual-model
+  inference service, configurable alert engine) and wiring the existing UI to it.
 - Structuring the project according to the SRS deliverables.
-- Writing configuration, documentation, and this file.
+- Writing configuration, tests, documentation, and this file.
 - Analysing the raw dataset (file inventory, duplicate detection, ESC-50 label mapping).
 
 ## What AI Was NOT Used For

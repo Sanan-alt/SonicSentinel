@@ -30,7 +30,10 @@ class Config:
 
     # Generated-output keys are resolved under paths.output_root (may be on a
     # different drive). All other path keys resolve under the project ROOT.
-    _OUTPUT_KEYS = {"categorized", "metadata_csv", "features_file", "models_dir", "reports_dir"}
+    _OUTPUT_KEYS = {
+        "categorized", "metadata_csv", "features_file", "models_dir", "reports_dir",
+        "gtm_model_dir", "uploads_dir", "visuals_dir", "database",
+    }
 
     # -- path helpers -----------------------------------------------------
     def path(self, *keys: str) -> Path:

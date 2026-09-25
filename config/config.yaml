@@ -17,6 +17,11 @@ paths:
   features_file: "features.npz"                  # extracted acoustic features (under output_root)
   models_dir: "python_models"                    # saved models + preprocessing pipeline (under output_root)
   reports_dir: "reports"                          # metrics, confusion matrices, plots (under output_root)
+  gtm_model_dir: "gtm_model"                     # second (Teachable-Machine-style) model (under output_root)
+  uploads_dir: "uploads"                         # user-uploaded audio (under output_root)
+  visuals_dir: "visuals"                         # generated waveform/spectrogram PNGs (under output_root)
+  database: "sonicsentinel.db"                   # SQLite database file (under output_root)
+  alert_rules: "alert_rules/alert_rules.json"    # configurable alert rules (project root)
 
 # Audio preprocessing settings (SRS Step 4 / xi).
 audio:
@@ -61,6 +66,20 @@ features:
   n_fft: 2048
   hop_length: 512
 
+# Data augmentation (SRS requirement xix). Applied to TRAIN split only.
+augmentation:
+  enabled: true
+  per_clip: 2               # number of augmented copies per training clip
+  methods:                  # augmentations to sample from
+    - add_noise
+    - time_shift
+    - pitch_shift
+    - time_stretch
+    - volume_adjust
+    - reverb
+    - distance_sim
+    - device_sim
+
 # Training settings.
 training:
   seed: 42
@@ -70,3 +89,7 @@ training:
     - random_forest
     - gradient_boosting
     - xgboost
+  # The "Google Teachable Machine" substitute: a SECOND model trained
+  # independently on the same training split (a different algorithm family so
+  # the two models genuinely disagree sometimes, per SRS dual-model design).
+  gtm_model: random_forest

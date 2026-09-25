@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign In | SonicSentinel AI{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 520px; margin: 40px auto 80px;">
+  
+  <div class="card" style="padding: 34px;">
+    
+    <div style="text-align: center; margin-bottom: 28px;">
+      <div class="brand-icon-box" style="margin: 0 auto 16px; width: 48px; height: 48px; font-size: 1.5rem;">
+        <i class="fa-solid fa-lock"></i>
+      </div>
+      <h2 style="font-family: var(--font-display); font-size: 1.8rem; font-weight: 700; margin-bottom: 6px;">
+        SonicSentinel Portal
+      </h2>
+      <p style="color: var(--text-secondary); font-size: 0.88rem;">
+        Enter your credentials to access acoustic operations.
+      </p>
+    </div>
+
+    <!-- Login Form -->
+    <form action="{{ url_for('login') }}" method="POST">
+      <div class="form-group">
+        <label class="form-label" for="email">Work Email</label>
+        <div style="position: relative;">
+          <input type="email" id="email" name="email" class="form-control" placeholder="name@sonicsentinel.ai" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Security Password</label>
+        <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">
+        <i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In to Operations
+      </button>
+    </form>
+
+    <div style="text-align: center; margin-top: 20px; font-size: 0.86rem; color: var(--text-secondary);">
+      Don't have an account? <a href="{{ url_for('register') }}" style="color: var(--text-accent); font-weight: 600;">Register Here</a>
+    </div>
+
+    <!-- Quick Demo Accounts (1-Click Fill) -->
+    <div style="margin-top: 30px; padding-top: 22px; border-top: 1px dashed var(--border-color);">
+      <div style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px; font-family: var(--font-mono);">
+        ⚡ 1-Click Demo Accounts:
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+        <button type="button" class="btn btn-sm btn-secondary" onclick="fillDemo('admin@sonicsentinel.ai', 'admin')">
+          <i class="fa-solid fa-user-shield"></i> Admin
+        </button>
+        <button type="button" class="btn btn-sm btn-secondary" onclick="fillDemo('operator@sonicsentinel.ai', 'operator')">
+          <i class="fa-solid fa-tower-broadcast"></i> Security Op
+        </button>
+        <button type="button" class="btn btn-sm btn-secondary" onclick="fillDemo('reviewer@sonicsentinel.ai', 'reviewer')" style="grid-column: span 2;">
+          <i class="fa-solid fa-headphones"></i> Audio Reviewer
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+function fillDemo(email, pass) {
+  document.getElementById('email').value = email;
+  document.getElementById('password').value = pass;
+}
+</script>
+{% endblock %}

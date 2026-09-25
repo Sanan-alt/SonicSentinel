@@ -1,0 +1,71 @@
+{
+  "_comment": "Configurable alert rules (SRS Step 16 / requirement liii / deliverable 7). Administrators can edit these without touching code. min_confidence is a percent (0-100).",
+  "defaults": {
+    "min_confidence": 60.0,
+    "top_two_margin": 8.0,
+    "required_consecutive": 1,
+    "require_model_agreement": false,
+    "min_audio_quality": "Acceptable",
+    "manual_review_on_disagreement": true
+  },
+  "categories": {
+    "gunshot": {
+      "severity": "Critical",
+      "min_confidence": 75.0,
+      "required_consecutive": 2,
+      "require_model_agreement": true,
+      "min_audio_quality": "Acceptable",
+      "recommended_action": "Dispatch security immediately and verify location.",
+      "escalate": true
+    },
+    "panic_scream": {
+      "severity": "Critical",
+      "min_confidence": 70.0,
+      "required_consecutive": 1,
+      "recommended_action": "Alert responders; check for person in distress.",
+      "escalate": true
+    },
+    "person_asking_for_help": {
+      "severity": "Critical",
+      "min_confidence": 70.0,
+      "recommended_action": "Treat as emergency call for help; respond.",
+      "escalate": true
+    },
+    "glass_breaking": {
+      "severity": "High",
+      "min_confidence": 65.0,
+      "recommended_action": "Possible break-in or accident; inspect area."
+    },
+    "aggression": {
+      "severity": "High",
+      "min_confidence": 65.0,
+      "required_consecutive": 2,
+      "recommended_action": "Possible conflict; monitor and prepare to intervene."
+    },
+    "alarm_siren": {
+      "severity": "High",
+      "min_confidence": 60.0,
+      "recommended_action": "Acknowledge alarm/siren; identify source."
+    },
+    "machinery_fault": {
+      "severity": "High",
+      "min_confidence": 60.0,
+      "recommended_action": "Schedule maintenance inspection."
+    },
+    "vehicle_horn": {
+      "severity": "Medium",
+      "min_confidence": 55.0,
+      "recommended_action": "Log traffic/environmental event."
+    },
+    "animal_sound": {
+      "severity": "Low",
+      "min_confidence": 55.0,
+      "recommended_action": "Log non-critical animal sound."
+    },
+    "background_noise": {
+      "severity": "Informational",
+      "min_confidence": 50.0,
+      "recommended_action": "No action; ambient background."
+    }
+  }
+}

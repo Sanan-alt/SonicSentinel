@@ -1,0 +1,172 @@
+{% extends 'base.html' %}
+
+{% block title %}Acoustic Intelligence Reports &amp; Analytics | SonicSentinel AI{% endblock %}
+
+{% block content %}
+<div class="container">
+  
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 15px;">
+    <div>
+      <h1 style="font-family: var(--font-display); font-size: 2.2rem; font-weight: 800; margin-bottom: 4px;">
+        Acoustic Intelligence &amp; Incident Reports
+      </h1>
+      <p style="color: var(--text-secondary); font-size: 0.92rem;">
+        Statistical distribution across the 10 sound classes and automated compliance reporting.
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 10px;">
+      <button class="btn btn-secondary" onclick="window.print()">
+        <i class="fa-solid fa-print"></i> Print Report
+      </button>
+      <button class="btn btn-primary" onclick="simulatePdfDownload()">
+        <i class="fa-solid fa-file-pdf"></i> Download PDF Summary
+      </button>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; margin-bottom: 30px;">
+    
+    <div class="card">
+      <div style="font-size: 0.76rem; color: var(--text-muted); font-family: var(--font-mono); text-transform: uppercase;">
+        Total Processed Audio Clips
+      </div>
+      <div style="font-size: 2.2rem; font-weight: 800; font-family: var(--font-display); color: var(--accent-cyan); margin: 6px 0;">
+        128,490
+      </div>
+      <div style="font-size: 0.78rem; color: var(--color-safe);"><i class="fa-solid fa-arrow-trend-up"></i> +14.2% from last month</div>
+    </div>
+
+    <div class="card">
+      <div style="font-size: 0.76rem; color: var(--text-muted); font-family: var(--font-mono); text-transform: uppercase;">
+        Verified Threat Precision
+      </div>
+      <div style="font-size: 2.2rem; font-weight: 800; font-family: var(--font-display); color: var(--color-safe); margin: 6px 0;">
+        98.6%
+      </div>
+      <div style="font-size: 0.78rem; color: var(--text-secondary);">False alarm rate &lt; 1.4%</div>
+    </div>
+
+    <div class="card">
+      <div style="font-size: 0.76rem; color: var(--text-muted); font-family: var(--font-mono); text-transform: uppercase;">
+        High-Priority Critical Alerts
+      </div>
+      <div style="font-size: 2.2rem; font-weight: 800; font-family: var(--font-display); color: var(--color-critical); margin: 6px 0;">
+        42
+      </div>
+      <div style="font-size: 0.78rem; color: var(--text-secondary);">Gunshots, Screams, Glass</div>
+    </div>
+
+    <div class="card">
+      <div style="font-size: 0.76rem; color: var(--text-muted); font-family: var(--font-mono); text-transform: uppercase;">
+        Avg Dual Model Consensus
+      </div>
+      <div style="font-size: 2.2rem; font-weight: 800; font-family: var(--font-display); color: #a855f7; margin: 6px 0;">
+        94.8%
+      </div>
+      <div style="font-size: 0.78rem; color: var(--text-secondary);">Python vs Teachable Machine</div>
+    </div>
+
+  </div>
+
+  <!-- Category Breakdown & Distribution Section -->
+  <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px; margin-bottom: 40px;">
+    
+    <!-- 10 Categories Percentage Distribution Bars -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <i class="fa-solid fa-chart-column" style="color: var(--accent-cyan);"></i>
+          10 Mandatory Sound Categories Distribution
+        </div>
+        <span class="badge badge-info">30-Day Aggregation</span>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        
+        {% set demo_stats = [
+          ('Gunshot', 8, 'danger'),
+          ('Panic Scream', 12, 'danger'),
+          ('Glass Breaking', 10, 'danger'),
+          ('Aggression or Violent Conflict', 14, 'danger'),
+          ('Person Asking for Help', 9, 'danger'),
+          ('Machinery Fault', 15, 'warning'),
+          ('Alarm or Siren', 11, 'warning'),
+          ('Vehicle Horn', 18, 'info'),
+          ('Animal Sound', 16, 'safe'),
+          ('Background Noise', 35, 'secondary')
+        ] %}
+
+        {% for name, pct, col in demo_stats %}
+          <div>
+            <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; margin-bottom: 5px;">
+              <span>{{ name }}</span>
+              <span style="font-family: var(--font-mono);">{{ pct }}%</span>
+            </div>
+            <div style="height: 8px; background: var(--bg-input); border-radius: 6px; overflow: hidden;">
+              <div style="height: 100%; width: {{ pct }}%; 
+                background: {% if col == 'danger' %}var(--color-critical){% elif col == 'warning' %}var(--color-warning){% elif col == 'info' %}var(--accent-cyan){% elif col == 'safe' %}var(--color-safe){% else %}var(--text-muted){% endif %};">
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+
+      </div>
+    </div>
+
+    <!-- Threat Severity Composition Pie/Donut Visual Card -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <i class="fa-solid fa-pie-chart" style="color: var(--color-warning);"></i>
+          Threat Severity Breakdown
+        </div>
+      </div>
+
+      <div style="text-align: center; padding: 20px 0;">
+        <div style="width: 170px; height: 170px; border-radius: 50%; margin: 0 auto 20px; 
+          background: conic-gradient(
+            var(--color-critical) 0% 35%, 
+            var(--color-warning) 35% 60%, 
+            var(--accent-cyan) 60% 80%, 
+            var(--color-safe) 80% 100%
+          );
+          display: flex; align-items: center; justify-content: center; box-shadow: var(--shadow-md);">
+          <div style="width: 110px; height: 110px; border-radius: 50%; background: var(--bg-card); display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <span style="font-size: 1.4rem; font-weight: 800; font-family: var(--font-display);">100%</span>
+            <small style="font-size: 0.65rem; color: var(--text-muted);">MONITORED</small>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.82rem; text-align: left; padding: 0 20px;">
+          <div style="display: flex; justify-content: space-between;">
+            <span><i class="fa-solid fa-circle" style="color: var(--color-critical); font-size: 0.65rem;"></i> Critical (Gunshot/Scream)</span>
+            <strong>35%</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span><i class="fa-solid fa-circle" style="color: var(--color-warning); font-size: 0.65rem;"></i> Warning (Alarm/Machinery)</span>
+            <strong>25%</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span><i class="fa-solid fa-circle" style="color: var(--accent-cyan); font-size: 0.65rem;"></i> Moderate (Horn)</span>
+            <strong>20%</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span><i class="fa-solid fa-circle" style="color: var(--color-safe); font-size: 0.65rem;"></i> Ambient / Safe</span>
+            <strong>20%</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+function simulatePdfDownload() {
+  alert("Generating high-resolution Acoustic Intelligence Compliance PDF Report...\n\nDocument downloaded: SonicSentinel_Security_Audit_Report.pdf");
+}
+</script>
+{% endblock %}

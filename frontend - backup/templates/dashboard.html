@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+
+{% block title %}Operations Dashboard | SonicSentinel AI{% endblock %}
+
+{% block content %}
+<div class="container">
+  
+  <!-- Dashboard Top Bar -->
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 15px;">
+    <div>
+      <h1 style="font-family: var(--font-display); font-size: 2.2rem; font-weight: 800; margin-bottom: 4px;">
+        Acoustic Operations Center
+      </h1>
+      <p style="color: var(--text-secondary); font-size: 0.92rem;">
+        Real-time telemetry, sensor nodes, and acoustic threat intelligence.
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 12px;">
+      <a href="{{ url_for('live_monitor') }}" class="btn btn-primary">
+        <i class="fa-solid fa-microphone-lines"></i> Open Live Monitor
+      </a>
+      <a href="{{ url_for('audio_analysis') }}" class="btn btn-secondary">
+        <i class="fa-solid fa-upload"></i> Upload Audio
+      </a>
+    </div>
+  </div>
+
+  <!-- KPI Metrics Grid -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; margin-bottom: 30px;">
+    
+    <div class="card" style="border-left: 4px solid var(--accent-cyan);">
+      <div style="font-size: 0.76rem; color: var(--text-muted); font-family: var(--font-mono); text-transform: uppercase;">
+        Active Acoustic Sensors
+      </div>
+      <div style="font-size: 2.1rem; font-weight: 800; font-family: var(--font-display); color: var(--text-primary); margin: 6px 0;">
+        1,482 <span style="font-size: 0.85rem; color: var(--color-safe); font-weight: 600;"><i class="fa-solid fa-arrow-up"></i> 100% Online</span>
+      </div>
+      <div style="font-size: 0.78rem; color: var(--text-secondary);">
+        Edge microphones &amp; IP camera streams
+      </div>
+    </div>
+
+    <div class="card" style="border-left: 4px solid var(--color-critical);">
+      <div style="font-size: 0.76rem; color: var(--text-muted); font-family: var(--font-mono); text-transform: uppercase;">
+        Critical Threats (Today)
+      </div>
+      <div style="font-size: 2.1rem; font-weight: 800; font-family: var(--font-display); color: var(--color-critical); margin: 6px 0;">
+        14 <span style="font-size: 0.85rem; color: var(--color-critical); font-weight: 600;">Alerts Triggered</span>
+      </div>
+      <div style="font-size: 0.78rem; color: var(--text-secondary);">
+        Gunshots, screams &amp; violent aggression
+      </div>
+    </div>
+
+    <div class="card" style="border-left: 4px solid var(--accent-indigo);">
+      <div style="font-size: 0.76rem; color: var(--text-muted); font-family: var(--font-mono); text-transform: uppercase;">
+        AI Dual-Model Consensus
+      </div>
+      <div style="font-size: 2.1rem; font-weight: 800; font-family: var(--font-display); color: var(--text-primary); margin: 6px 0;">
+        96.4% <span style="font-size: 0.85rem; color: var(--accent-cyan); font-weight: 600;">High Agreement</span>
+      </div>
+      <div style="font-size: 0.78rem; color: var(--text-secondary);">
+        Python ResNet vs Google Teachable Machine
+      </div>
+    </div>
+
+    <div class="card" style="border-left: 4px solid var(--color-safe);">
+      <div style="font-size: 0.76rem; color: var(--text-muted); font-family: var(--font-mono); text-transform: uppercase;">
+        Edge Detection Latency
+      </div>
+      <div style="font-size: 2.1rem; font-weight: 800; font-family: var(--font-display); color: var(--color-safe); margin: 6px 0;">
+        342 ms <span style="font-size: 0.85rem; color: var(--color-safe); font-weight: 600;">Optimal</span>
+      </div>
+      <div style="font-size: 0.78rem; color: var(--text-secondary);">
+        Sub-second threat dispatch SLA
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Main Content Grid: Live Feed & 10 Mandatory Categories Monitor -->
+  <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 24px; margin-bottom: 40px;">
+    
+    <!-- Left: Live Incident Stream Table -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <i class="fa-solid fa-list-check" style="color: var(--accent-cyan);"></i>
+          Real-Time Acoustic Incidents Stream
+        </div>
+        <a href="{{ url_for('event_history') }}" class="btn btn-sm btn-secondary">
+          Full Audit Log &rarr;
+        </a>
+      </div>
+
+      <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 0.86rem; text-align: left;">
+          <thead>
+            <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-family: var(--font-mono); font-size: 0.75rem;">
+              <th style="padding: 10px 12px;">ID &amp; EVENT</th>
+              <th style="padding: 10px 12px;">SEVERITY</th>
+              <th style="padding: 10px 12px;">PYTHON AI</th>
+              <th style="padding: 10px 12px;">TEACHABLE M.</th>
+              <th style="padding: 10px 12px;">LOCATION</th>
+              <th style="padding: 10px 12px; text-align: right;">PREVIEW</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for evt in events %}
+              <tr style="border-bottom: 1px solid var(--border-color); transition: background var(--transition-fast);">
+                <td style="padding: 12px;">
+                  <div style="font-weight: 700; color: var(--text-primary);">{{ evt.category }}</div>
+                  <small style="font-family: var(--font-mono); color: var(--text-muted);">{{ evt.id }} &bull; {{ evt.timestamp }}</small>
+                </td>
+                <td style="padding: 12px;">
+                  <span class="badge {% if evt.severity == 'Critical' %}badge-danger{% elif evt.severity == 'Warning' %}badge-warning{% elif evt.severity == 'Moderate' %}badge-info{% else %}badge-secondary{% endif %}">
+                    {{ evt.severity }}
+                  </span>
+                </td>
+                <td style="padding: 12px; font-family: var(--font-mono); font-weight: 600; color: var(--accent-cyan);">
+                  {{ evt.confidence_py }}%
+                </td>
+                <td style="padding: 12px; font-family: var(--font-mono); font-weight: 600; color: #a855f7;">
+                  {{ evt.confidence_tm }}%
+                </td>
+                <td style="padding: 12px; color: var(--text-secondary); font-size: 0.8rem;">
+                  {{ evt.location }}
+                </td>
+                <td style="padding: 12px; text-align: right;">
+                  <button class="btn btn-sm btn-secondary" onclick="window.acousticSynth.playCategorySound('{{ evt.sample_type }}', this)" title="Listen to acoustic sample">
+                    <i class="fa-solid fa-play"></i>
+                  </button>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Right: 10 Mandatory Categories Status Panel -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">
+          <i class="fa-solid fa-shield-cat" style="color: var(--color-warning);"></i>
+          10 Acoustic Classes
+        </div>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px;">
+        {% for cat in sound_categories %}
+          <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: var(--bg-secondary); border-radius: 8px; border: 1px solid var(--border-color);">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <i class="fa-solid {{ cat.icon }}" style="width: 18px; color: var(--accent-cyan);"></i>
+              <span style="font-size: 0.84rem; font-weight: 600;">{{ cat.name }}</span>
+            </div>
+            <button class="play-audio-btn" style="width: 26px; height: 26px; font-size: 0.68rem;" onclick="window.acousticSynth.playCategorySound('{{ cat.category_key }}', this)" title="Test sound">
+              <i class="fa-solid fa-play"></i>
+            </button>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,299 @@
+{% extends 'base.html' %}
+
+{% block title %}Audio File Analysis &amp; Validation | SonicSentinel AI{% endblock %}
+
+{% block extra_head %}
+<style>
+.drop-zone {
+  border: 2px dashed var(--border-color);
+  border-radius: 16px;
+  padding: 40px 20px;
+  text-align: center;
+  background: var(--bg-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.drop-zone:hover, .drop-zone.drag-over {
+  border-color: var(--accent-cyan);
+  background: rgba(6, 182, 212, 0.05);
+  box-shadow: var(--shadow-glow);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+  
+  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; flex-wrap: wrap; gap: 15px;">
+    <div>
+      <h1 style="font-family: var(--font-display); font-size: 2.2rem; font-weight: 800; margin-bottom: 4px;">
+        Audio File Analysis &amp; Validation Studio
+      </h1>
+      <p style="color: var(--text-secondary); font-size: 0.92rem;">
+        Validate acoustic recordings and perform dual-model AI inference cross-checks.
+      </p>
+    </div>
+
+    <!-- Batch Upload Button -->
+    <div>
+      <label for="batchFileInput" class="btn btn-secondary" style="cursor: pointer;">
+        <i class="fa-solid fa-layer-group"></i> Batch Audio Upload
+      </label>
+      <input type="file" id="batchFileInput" multiple accept=".wav,.mp3,.flac,.ogg,.m4a" style="display: none;">
+    </div>
+  </div>
+
+  <!-- Single Audio Upload Drag & Drop Area -->
+  <div class="card" style="margin-bottom: 30px;">
+    <div class="drop-zone" id="audioDropZone">
+      <div style="font-size: 2.8rem; color: var(--accent-cyan); margin-bottom: 12px;">
+        <i class="fa-solid fa-cloud-arrow-up"></i>
+      </div>
+      <h3 style="font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; margin-bottom: 6px;">
+        Drag &amp; Drop Acoustic Audio Recording
+      </h3>
+      <p style="color: var(--text-secondary); font-size: 0.88rem; margin-bottom: 16px;">
+        Supported Formats: <strong>WAV, MP3, FLAC, OGG, M4A</strong> &bull; Max File Size: <strong>25 MB</strong>
+      </p>
+      <button class="btn btn-primary" type="button">
+        <i class="fa-solid fa-folder-open"></i> Browse Audio Files
+      </button>
+      <input type="file" id="audioFileInput" accept=".wav,.mp3,.flac,.ogg,.m4a" style="display: none;">
+    </div>
+
+    <!-- Audio File Validation Summary (viii. Audio File Validation) -->
+    <div id="validationSummary" style="display: none; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+      <h4 style="font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; margin-bottom: 14px;">
+        <i class="fa-solid fa-clipboard-check" style="color: var(--color-safe);"></i>
+        Audio File Validation Results
+      </h4>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 20px;">
+        
+        <div style="background: var(--bg-secondary); padding: 12px; border-radius: 10px; border: 1px solid var(--border-color);">
+          <small style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase;">File Name</small>
+          <div id="valFileName" style="font-weight: 600; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 4px;">
+            -
+          </div>
+        </div>
+
+        <div style="background: var(--bg-secondary); padding: 12px; border-radius: 10px; border: 1px solid var(--border-color);">
+          <small style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase;">Format Validation</small>
+          <div id="valFormat" style="margin-top: 4px;">-</div>
+        </div>
+
+        <div style="background: var(--bg-secondary); padding: 12px; border-radius: 10px; border: 1px solid var(--border-color);">
+          <small style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase;">File Size (Max 25MB)</small>
+          <div id="valSize" style="margin-top: 4px;">-</div>
+        </div>
+
+        <div style="background: var(--bg-secondary); padding: 12px; border-radius: 10px; border: 1px solid var(--border-color);">
+          <small style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase;">Duration (&le; 180s)</small>
+          <div id="valDuration" style="margin-top: 4px;">-</div>
+        </div>
+
+        <div style="background: var(--bg-secondary); padding: 12px; border-radius: 10px; border: 1px solid var(--border-color);">
+          <small style="color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase;">Sampling Rate</small>
+          <div id="valSampleRate" style="margin-top: 4px;">-</div>
+        </div>
+
+      </div>
+
+      <!-- Demo Sound Class Simulator Selector -->
+      <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px; background: var(--bg-input); padding: 14px 18px; border-radius: 12px;">
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-secondary);">
+            <i class="fa-solid fa-tag"></i> Simulate Audio Sample:
+          </label>
+          <select id="demoCategorySelect" class="form-select" style="width: auto; padding: 6px 12px; font-size: 0.85rem;">
+            {% for cat in sound_categories %}
+              <option value="{{ cat.category_key }}">{{ cat.name }} ({{ cat.severity }})</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <button id="runAnalysisBtn" class="btn btn-primary" type="button">
+          <i class="fa-solid fa-play"></i> Run Dual-Model Inference
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="analysisLoading" style="display: none; padding: 30px; text-align: center; justify-content: center; align-items: center; flex-direction: column; gap: 12px;">
+      <i class="fa-solid fa-circle-notch fa-spin" style="font-size: 2rem; color: var(--accent-cyan);"></i>
+      <div style="font-weight: 600;">Running Python ResNet &amp; Google Teachable Machine Audio Models...</div>
+    </div>
+  </div>
+
+  <!-- DUAL MODEL ANALYSIS RESULTS SECTION -->
+  <div id="analysisResultsSection" style="display: none; margin-bottom: 40px;">
+    
+    <div class="card" style="margin-bottom: 24px;">
+      <div class="card-header">
+        <div class="card-title">
+          <i class="fa-solid fa-brain" style="color: var(--accent-cyan);"></i>
+          Dual AI Classification Output &bull; <span id="resEventId" style="font-family: var(--font-mono); color: var(--text-accent);"></span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span id="resSeverityBadge" class="badge"></span>
+          <button id="playAnalysedAudioBtn" class="btn btn-sm btn-secondary">
+            <i class="fa-solid fa-volume-high"></i> Play Audio
+          </button>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-bottom: 20px;">
+        <div style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; font-family: var(--font-mono);">
+          Identified Sound Event Category
+        </div>
+        <div id="resCategoryName" style="font-size: 2.4rem; font-weight: 800; font-family: var(--font-display); color: var(--text-primary); margin-top: 4px;">
+          -
+        </div>
+        <div id="modelsConfidenceDelta" style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--color-safe); margin-top: 6px;">
+          -
+        </div>
+      </div>
+
+      <!-- Dual Model Comparison Cards Grid -->
+      <div class="dual-model-grid">
+        
+        <!-- Python Model -->
+        <div class="model-box" style="border-left: 4px solid var(--accent-cyan);">
+          <div class="model-box-header">
+            <div>
+              <div class="model-name">Python Sound Classifier</div>
+              <small style="color: var(--text-muted); font-size: 0.75rem;">SonicNet-V4 Acoustic ResNet</small>
+            </div>
+            <span class="badge badge-info">Python Engine</span>
+          </div>
+
+          <div id="pyModelScore" class="model-score-display">0%</div>
+
+          <div class="model-meter">
+            <div id="pyModelBar" class="model-meter-fill fill-python" style="width: 0%;"></div>
+          </div>
+          <div style="font-size: 0.78rem; color: var(--text-secondary); display: flex; justify-content: space-between;">
+            <span>Architecture: 1D CNN + BiLSTM</span>
+            <span>Threshold: 80%</span>
+          </div>
+        </div>
+
+        <!-- Google Teachable Machine -->
+        <div class="model-box" style="border-left: 4px solid #a855f7;">
+          <div class="model-box-header">
+            <div>
+              <div class="model-name">Google Teachable Machine</div>
+              <small style="color: var(--text-muted); font-size: 0.75rem;">Audio Model (Speech Commands / TM V2)</small>
+            </div>
+            <span class="badge" style="background: rgba(168, 85, 247, 0.15); color: #a855f7; border: 1px solid rgba(168, 85, 247, 0.3);">TensorFlow.js</span>
+          </div>
+
+          <div id="tmModelScore" class="model-score-display" style="color: #a855f7;">0%</div>
+
+          <div class="model-meter">
+            <div id="tmModelBar" class="model-meter-fill fill-teachable" style="width: 0%;"></div>
+          </div>
+          <div style="font-size: 0.78rem; color: var(--text-secondary); display: flex; justify-content: space-between;">
+            <span>Architecture: Transfer Spectrogram</span>
+            <span>Threshold: 80%</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Waveform & Spectrogram Generation Display -->
+      <div style="margin-top: 24px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+          <h4 style="font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; margin: 0;">
+            <i class="fa-solid fa-wave-square" style="color: var(--accent-cyan);"></i> Generated Acoustic Spectrogram Waveform
+          </h4>
+          <div class="vis-theme-selector" data-target="analysisWaveformWrapper" title="Choose Spectrogram Theme">
+            <button type="button" class="vis-theme-chip active" data-vtheme="lab" title="Clean Laboratory"><i class="fa-solid fa-flask"></i> Lab</button>
+            <button type="button" class="vis-theme-chip" data-vtheme="sonar" title="Deep Navy Sonar"><i class="fa-solid fa-satellite-dish"></i> Sonar</button>
+            <button type="button" class="vis-theme-chip" data-vtheme="emerald" title="Tactical Emerald Radar"><i class="fa-solid fa-radar"></i> Radar</button>
+            <button type="button" class="vis-theme-chip" data-vtheme="cyber" title="Cyber Studio Dark"><i class="fa-solid fa-moon"></i> Cyber</button>
+          </div>
+        </div>
+        <div class="canvas-wrapper canvas-theme-lab" id="analysisWaveformWrapper" style="height: 180px;">
+          <canvas id="analysisWaveformCanvas" width="800" height="180"></canvas>
+          <div class="canvas-overlay-grid"></div>
+          <div class="canvas-baseline-guide"></div>
+        </div>
+      </div>
+
+      <!-- Audio-Quality Assessment (SNR, Clipping, Background Noise) -->
+      <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+        <h4 style="font-family: var(--font-display); font-size: 1.05rem; font-weight: 700; margin-bottom: 14px;">
+          <i class="fa-solid fa-gauge-high" style="color: var(--color-safe);"></i> Audio-Quality Assessment
+        </h4>
+
+        <div class="quality-metrics-row">
+          
+          <div class="quality-stat-card">
+            <div class="quality-stat-lbl">Signal-to-Noise (SNR)</div>
+            <div id="valSnrDb" class="quality-stat-val" style="color: var(--accent-cyan);">-</div>
+            <small style="color: var(--text-muted); font-size: 0.7rem;">&gt; 20 dB is optimal</small>
+          </div>
+
+          <div class="quality-stat-card">
+            <div class="quality-stat-lbl">Clipping Ratio</div>
+            <div id="valClipping" class="quality-stat-val" style="color: var(--color-safe);">-</div>
+            <small style="color: var(--text-muted); font-size: 0.7rem;">&lt; 1% harmonic distortion</small>
+          </div>
+
+          <div class="quality-stat-card">
+            <div class="quality-stat-lbl">Ambient Background</div>
+            <div id="valBgNoise" class="quality-stat-val" style="color: var(--text-secondary);">-</div>
+            <small style="color: var(--text-muted); font-size: 0.7rem;">Baseline floor dB</small>
+          </div>
+
+          <div class="quality-stat-card">
+            <div class="quality-stat-lbl">Overall Quality</div>
+            <div id="valQualityRating" class="quality-stat-val" style="color: var(--color-safe);">-</div>
+            <small style="color: var(--text-muted); font-size: 0.7rem;">High fidelity input</small>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- BATCH AUDIO UPLOAD RESULTS SECTION (v. Batch Audio Upload) -->
+  <div id="batchUploadResults" class="card" style="display: none; margin-bottom: 40px;">
+    <div class="card-header">
+      <div class="card-title">
+        <i class="fa-solid fa-layer-group" style="color: var(--accent-cyan);"></i>
+        Batch Audio Clips Classification Queue
+      </div>
+      <span class="badge badge-info">Multi-File Processing</span>
+    </div>
+
+    <div style="overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 0.86rem; text-align: left;">
+        <thead>
+          <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-family: var(--font-mono); font-size: 0.75rem;">
+            <th style="padding: 10px 12px;">FILE NAME</th>
+            <th style="padding: 10px 12px;">FORMAT</th>
+            <th style="padding: 10px 12px;">SIZE</th>
+            <th style="padding: 10px 12px;">VALIDATION</th>
+            <th style="padding: 10px 12px;">PREDICTED CLASS</th>
+            <th style="padding: 10px 12px;">CONFIDENCE</th>
+            <th style="padding: 10px 12px;">PLAY</th>
+          </tr>
+        </thead>
+        <tbody id="batchUploadTableBody">
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script src="{{ url_for('static', filename='js/audio_analysis.js') }}?v=2.2"></script>
+{% endblock %}

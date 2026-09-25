@@ -51,21 +51,29 @@ evaluation reports.
 ```
 SonicSentinel/
 ├── config/
-│   └── config.yaml            # central configuration (paths, audio, features, models)
-├── src/
+│   └── config.yaml            # central config (paths, audio, features, models, augmentation)
+├── src/                       # ML pipeline
 │   ├── sonic/                 # core package
 │   │   ├── config.py          # config loader + path resolver
 │   │   ├── labels.py          # ESC-50 -> SRS class mapping
 │   │   ├── preprocessing.py   # load / mono / resample / trim / normalise / pad
-│   │   └── features.py        # MFCC, mel, chroma, ZCR, RMS, spectral features
+│   │   ├── features.py        # MFCC, mel, chroma, ZCR, RMS, spectral features
+│   │   └── augmentation.py    # noise / shift / pitch / stretch / reverb / distance / device
 │   ├── organize.py            # build dataset + metadata (dedup + stratified split)
-│   ├── extract_features.py    # extract acoustic features to .npz
-│   └── train.py               # train + compare models, save best + reports
+│   ├── extract_features.py    # extract features (+ train-only augmentation) to .npz
+│   ├── train.py               # train Python model + independent GTM-substitute; reports
+│   └── predict.py             # CLI single-clip prediction
+├── webapp/                    # Flask web application
+│   ├── app.py                 # routes, auth, real inference, alerts, DB
+│   ├── services/              # database, audio_io, visuals, inference, alerts, categories
+│   ├── templates/             # Jinja pages (dashboard, live, analysis, reviews, reports…)
+│   └── static/                # CSS + JS (wired to the real API)
+├── alert_rules/
+│   └── alert_rules.json       # configurable alert rules (severity, thresholds, actions)
+├── tests/                     # pytest suite (preprocessing, features, augmentation, alerts)
+├── sample_audio/              # one demo clip per available class
 ├── esc50.csv                  # ESC-50 target -> category reference
-├── requirements.txt
-├── AI_USAGE.md
-├── LICENSE
-└── README.md
+├── requirements.txt · AI_USAGE.md · LICENSE · README.md
 ```
 
 > 🔒 The raw audio dataset and generated model artefacts are intentionally **not** committed
@@ -104,14 +112,38 @@ python -m pip install -r requirements.txt
 
 # 3. Place raw audio under Dataset/  (ESC-50 wavs + your mp3 category folders)
 
-# 4. Run the pipeline
-python src/organize.py            # build dataset + metadata
-python src/extract_features.py    # extract acoustic features
-python src/train.py               # train, compare, and save the best model
+# 4. Train the models
+python src/organize.py            # build dataset + metadata (dedup + stratified split)
+python src/extract_features.py    # extract features (+ train-only augmentation)
+python src/train.py               # train Python model + independent GTM-substitute
+
+# 5. Launch the web app
+python webapp/app.py              # http://localhost:5000
 ```
 
-All paths, audio settings, feature parameters, and the model list are configurable
-in **`config/config.yaml`** — no code changes needed to retune.
+Demo accounts (created on first run): `admin@sonicsentinel.ai` / `admin`,
+`operator@sonicsentinel.ai` / `operator`, `reviewer@sonicsentinel.ai` / `reviewer`.
+
+All paths, audio settings, feature parameters, augmentation, the model list, and
+**alert rules** (`alert_rules/alert_rules.json`) are configurable without code changes.
+
+> **Note on storage:** heavy generated artefacts (dataset copies, features, models,
+> uploads, database) are written under `paths.output_root` in `config/config.yaml`.
+> Point it at any drive with free space.
+
+## 🖥️ Web Application
+
+| Page | What it does |
+|:---|:---|
+| **Dashboard** | Live telemetry from the real event database |
+| **Audio Analysis** | Upload a clip → real dual-model prediction, confidence comparison, quality, waveform + spectrogram |
+| **Live Monitor** | Web-Audio mic capture; ~2s windows are sent to the models on peak |
+| **Critical Events** | Auto-generated high/critical alerts |
+| **Manual Review** | Low-confidence / disagreement / poor-quality events queued for reviewers |
+| **Event History / Reports** | Full audit trail + CSV export |
+
+Every prediction is produced by the trained Python and GTM-substitute models —
+**no random numbers, no hard-coded results** (per SRS anti-shortcut rules).
 
 ---
 
