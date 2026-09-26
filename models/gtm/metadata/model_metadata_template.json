@@ -1,0 +1,25 @@
+{
+  "_note": "Fill this in from your Google Teachable Machine project after export. Values left as null/empty must be supplied by the human who trains GTM in the browser. Nothing here is auto-filled or faked.",
+  "model_name": "Google Teachable Machine Audio Model",
+  "model_version": "",
+  "gtm_project_url": "",
+  "trained_on": "training-split originals exported by gtm/export_dataset.py",
+  "labels": [
+    "Machinery Fault", "Glass Breaking", "Alarm or Siren", "Vehicle Horn",
+    "Animal Sound", "Gunshot", "Panic Scream", "Aggression",
+    "Person Asking for Help", "Background Noise"
+  ],
+  "background_noise_class_included": true,
+  "training_sample_counts_per_class": {
+    "Machinery Fault": null, "Glass Breaking": null, "Alarm or Siren": null,
+    "Vehicle Horn": null, "Animal Sound": null, "Gunshot": null,
+    "Panic Scream": null, "Aggression": null,
+    "Person Asking for Help": null, "Background Noise": null
+  },
+  "training_configuration": {"epochs": null, "batch_size": null, "learning_rate": null},
+  "export_format": "tfjs | keras",
+  "export_date": "",
+  "training_observations": "",
+  "incorrect_classifications_noted": "",
+  "retraining_details": ""
+}

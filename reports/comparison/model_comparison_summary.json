@@ -1,0 +1,23 @@
+{
+  "total_unseen_test_recordings": 336,
+  "meets_min_100": true,
+  "per_class_test_counts": {
+    "animal_sound": 72,
+    "background_noise": 42,
+    "machinery_fault": 30,
+    "vehicle_horn": 6,
+    "alarm_siren": 18,
+    "glass_breaking": 51,
+    "aggression": 36,
+    "person_asking_for_help": 45,
+    "gunshot": 18,
+    "panic_scream": 18
+  },
+  "classes_below_10_test_recordings": {
+    "vehicle_horn": 6
+  },
+  "python_accuracy_on_report": 0.8542,
+  "second_model_accuracy_on_report": 0.7976,
+  "gtm_configured": false,
+  "gtm_comparison_status": "BLOCKED \u2014 GTM model unavailable"
+}

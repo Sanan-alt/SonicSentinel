@@ -1,0 +1,19 @@
+services:
+  sonicsentinel:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      # Set a real secret before any non-local use.
+      - SONICSENTINEL_SECRET_KEY=${SONICSENTINEL_SECRET_KEY:-changeme-in-production}
+      - SONIC_BG_TRAIN=0
+    volumes:
+      # Persist generated artefacts (db, models, uploads, reports) across restarts.
+      - sonic_data:/data
+      # Mount a trained Python model + optional GTM export from the host.
+      - ./models:/app/models:ro
+    # The app reads paths.output_root from config/config.yaml. For containers,
+    # point output_root at /data (a writable volume) instead of a Windows path.
+
+volumes:
+  sonic_data:

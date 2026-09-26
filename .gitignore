@@ -1,21 +1,36 @@
 # ---- Audio datasets (heavy; kept locally / in Git LFS or object storage) ----
 Dataset/
-data/
-data/categorized_audio/
 Dataset/audio/
 Dataset/categorized_audio/
+
+# data/: ignore heavy raw/processed audio, KEEP lightweight metadata + splits
+# (SRS section 3 wants these committed).
+data/raw/
+data/processed/
+data/audio_dataset/
+data/augmented/
+data/**/*.wav
+data/**/*.mp3
+data/**/*.flac
+data/**/*.ogg
+data/**/*.m4a
 
 # ---- Generated ML artefacts + runtime data ----
 *.npz
 python_models/
 gtm_model/
-reports/
 sonicsentinel_data/
 uploads/
 visuals/
 *.db
 *.sqlite
 *.sqlite3
+
+# reports/: ignore heavy binaries, KEEP the committable evidence (json/csv/md/png).
+# (SRS sections 4 & 6 want these committed; they are small.)
+reports/**/*.joblib
+reports/**/*.npz
+reports/**/*.wav
 
 # ---- Extracted / temporary working files ----
 srs_text.txt
@@ -38,3 +53,8 @@ env/
 Thumbs.db
 .vscode/
 .idea/
+
+# ---- GTM: keep code/docs, ignore heavy exported dataset + model weights ----
+gtm/dataset_export/
+models/gtm/export/*
+!models/gtm/export/README.md

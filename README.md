@@ -143,6 +143,28 @@ All paths, audio settings, feature parameters, augmentation, the model list, and
 > uploads, database) are written under `paths.output_root` in `config/config.yaml`.
 > Point it at any drive with free space.
 
+## 📖 How to use each feature (SRS execution guide)
+
+| Task | Where / how |
+|---|---|
+| **Registration & login** | `/register` to create an account (pick a role); `/login` or a demo button. |
+| **Audio upload** | Audio Analysis → drag a clip or browse; single or batch. |
+| **Audio preview** | The upload page shows an inline player (play/pause/seek/volume). |
+| **Live microphone monitoring** | Live Monitor → allow mic → Start; ~2.5s windows classified continuously. |
+| **Metadata viewing** | Shown after upload: duration, sample rate, channels, size, bit depth. |
+| **Waveform / Spectrogram** | Generated per clip and shown on the result + per-event report. |
+| **Python prediction** | Top class + confidence + top-3 + all-class scores. |
+| **GTM prediction** | Real GTM if configured; otherwise "Not available" (comparison BLOCKED). |
+| **Confidence interpretation** | Percentages per class; higher = more confident. |
+| **Model comparison** | Agreement, confidence difference, top-two margin (or BLOCKED if no GTM). |
+| **Audio-quality interpretation** | Good / Acceptable / Poor / Unusable, with reason. |
+| **Alert acknowledgement** | Critical Events → Acknowledge / Dismiss / Escalate. |
+| **Manual review** | Manual Review queue → play, inspect, confirm or override class (audited). |
+| **Dashboard access** | `/dashboard` — live stats and recent detections. |
+| **Event-history search** | Event History → filter by class/severity/date/status. |
+| **Report export** | Reports / Event History → CSV export; per-event report pages. |
+| **Automated tests** | `python -m pytest -q` or `python scripts/run_all_tests.py`. |
+
 ## 🖥️ Web Application
 
 | Page | What it does |
@@ -155,8 +177,12 @@ All paths, audio settings, feature parameters, augmentation, the model list, and
 | **Manual Review** | Low-confidence / disagreement / poor-quality events queued for reviewers |
 | **Event History / Reports** | Full audit trail + CSV export |
 
-Every prediction is produced by the trained Python and GTM-substitute models —
-**no random numbers, no hard-coded results** (per SRS anti-shortcut rules).
+Every Python prediction is produced by the trained scikit-learn model —
+**no random numbers, no hard-coded results** (per SRS anti-shortcut rules). The
+second model is **real Google Teachable Machine**, loaded from a human-created
+export (see below); when it is not yet configured the app honestly shows GTM as
+"Not available" and marks the comparison **BLOCKED** — it never presents the
+Python model as GTM.
 
 ---
 
@@ -187,14 +213,45 @@ Every prediction is produced by the trained Python and GTM-substitute models —
 
 ---
 
-## ⚠️ Current Data Status
+## 🤖 Google Teachable Machine (required second model)
 
-This is an active build. Real recordings still need to be collected for a few classes
-(`gunshot`, `panic_scream`, `person_asking_for_help`). The training pipeline runs on
-whatever classes currently have real, correctly-labelled data — and re-runs cleanly the
-moment new audio is dropped into `Dataset/` and `python src/organize.py` is run again.
+GTM is browser-based and cannot be trained from Python, so its model must be
+exported by a human. Everything around it is automated:
 
-We do **not** mislabel or synthesise fake class data (per SRS anti-shortcut rules).
+```powershell
+python gtm/export_dataset.py     # builds gtm/dataset_export/<Class>/ (training-split originals)
+```
+
+Then upload those folders into a GTM Audio Project, train, export, and drop the
+export into `models/gtm/export/`. Full steps: `documentation/GOOGLE_TEACHABLE_MACHINE.md`.
+Until then the app reports `GTM_NOT_CONFIGURED` and comparison is `BLOCKED` — no fake fallback.
+
+## ✅ Honest compliance & validation
+
+```powershell
+python src/validate_dataset.py       # real per-class counts vs the 300/class + 3,000 targets
+python scripts/final_srs_audit.py    # evidence-driven SRS status -> reports/final/
+python scripts/run_all_tests.py      # env + dataset + pytest + audit
+```
+
+- `documentation/SRS_COMPLIANCE_MATRIX.md` — full requirement-by-requirement status.
+- Nothing is marked COMPLETE without real evidence; blocked items are labelled
+  `BLOCKED_BY_REAL_DATA` or `BLOCKED_BY_EXTERNAL_GTM`.
+
+## ⚠️ Current Data Status (measured, honest)
+
+**Total unique original clips: 2,244 / 3,000** (below the SRS target). Per-class
+originals: animal 480, glass 340, help 300, background 280, aggression 244,
+machinery 200, alarm 120, gunshot 120*, panic_scream 120*, vehicle_horn 40.
+
+`*` gunshot and panic_scream currently use **synthetic placeholders** (tagged
+`synthetic_*` and disclosed in `AI_USAGE.md`) because no real recordings exist
+for them yet. A real `Dataset/scream/` folder (1,583 wavs) can be mapped to
+`panic_scream` to replace the placeholders — see the compliance matrix.
+
+We do **not** mislabel data or fabricate counts, metrics, GTM evidence, or
+screenshots (per SRS anti-shortcut rules). Drop real audio into `Dataset/` and
+re-run `python src/run_pipeline.py` to retrain.
 
 ---
 

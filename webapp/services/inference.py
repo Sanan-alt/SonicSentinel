@@ -1,9 +1,14 @@
 """Dual-model inference + comparison + decision service (SRS Steps 8-19).
 
-Runs the Python model and the independent GTM-substitute model on the SAME
-preprocessed audio, WITHOUT sharing either model's output with the other
-(SRS item 14). Then compares them, assesses quality, applies alert rules, and
-produces a final event decision.
+Runs the Python model and, independently, the real Google Teachable Machine
+(GTM) model (loaded via ``gtm_service.py`` from a human-exported artefact) on
+the SAME preprocessed audio, WITHOUT sharing either model's output with the
+other (SRS item 14). Then compares them, assesses quality, applies alert rules,
+and produces a final event decision.
+
+If no valid GTM export is configured, GTM predictions are reported as "not
+available" and the comparison is marked BLOCKED — the Python model is never
+presented as GTM (SRS anti-shortcut rules).
 
 This is the single real classification path used by the Flask app for uploads,
 batches, and live windows.
@@ -50,15 +55,23 @@ class InferenceService:
         self.settings = AudioSettings.from_config(self.cfg)
 
         py_path = self.cfg.path("models_dir") / "sonicsentinel_model.joblib"
-        gtm_path = self.cfg.path("gtm_model_dir") / "gtm_model.joblib"
         if not py_path.exists():
             raise FileNotFoundError(f"Python model not found: {py_path}. Run src/train.py.")
         self.py_bundle = joblib.load(py_path)
-        # GTM model is optional; fall back to Python bundle only if missing.
-        self.gtm_bundle = joblib.load(gtm_path) if gtm_path.exists() else None
+        self.classes: list[str] = list(self.py_bundle["classes"])
 
         self.alert_engine = AlertEngine.from_file(self.cfg.path("alert_rules"))
-        self.classes: list[str] = list(self.py_bundle["classes"])
+
+        # Google Teachable Machine (SRS Step 9-11). This is a REAL, human-exported
+        # GTM audio model loaded from models/gtm/export/. It is NOT the Python
+        # model in disguise: when no valid export is present the service reports
+        # GTM_NOT_CONFIGURED and the comparison is marked BLOCKED. The Python
+        # prediction is NEVER copied into the GTM result (SRS anti-shortcut).
+        try:
+            from .gtm_service import GTMService
+            self.gtm = GTMService(self.cfg.path("gtm_model_dir") / "export", self.classes)
+        except Exception:  # noqa: BLE001
+            self.gtm = None
 
     # -- low-level scoring ------------------------------------------------
     def _score(self, bundle, feature_vec: np.ndarray) -> tuple[str, float, dict[str, float]]:
@@ -86,14 +99,26 @@ class InferenceService:
         feats = extract_features(y, sr, self.cfg)
 
         py_class, py_conf, py_scores = self._score(self.py_bundle, feats)
-        if self.gtm_bundle is not None:
-            gtm_class, gtm_conf, gtm_scores = self._score(self.gtm_bundle, feats)
-        else:
-            gtm_class, gtm_conf, gtm_scores = py_class, py_conf, py_scores
 
-        match = py_class == gtm_class
-        conf_diff = round(abs(py_conf - gtm_conf), 2)
-        agreement = _agreement_label(match, conf_diff, py_conf)
+        # GTM runs independently on the SAME preprocessed signal. It NEVER
+        # receives the Python prediction. If no valid GTM model is configured,
+        # gtm_result is None and the comparison is BLOCKED (not faked).
+        gtm_result = self.gtm.predict(y, sr) if (self.gtm and self.gtm.configured) else None
+        gtm_available = gtm_result is not None
+
+        if gtm_available:
+            gtm_class = gtm_result["predicted_class"]
+            gtm_conf = gtm_result["confidence"]
+            gtm_scores = gtm_result["scores"]
+            match = py_class == gtm_class
+            conf_diff = round(abs(py_conf - gtm_conf), 2)
+            agreement = _agreement_label(match, conf_diff, py_conf)
+        else:
+            gtm_class, gtm_conf, gtm_scores = None, None, {}
+            match = None
+            conf_diff = None
+            agreement = "GTM Not Available"
+
         top_two_margin = self._top_two_margin(py_scores)
 
         # Overlapping-sound detection (SRS requirement xxxix): more than one
@@ -117,14 +142,24 @@ class InferenceService:
             consecutive=consecutive,
         )
 
+        gtm_state = self.gtm.state if self.gtm else "GTM_NOT_CONFIGURED"
         return {
             "python": {"predicted_class": py_class, "confidence": py_conf, "scores": py_scores},
-            "gtm": {"predicted_class": gtm_class, "confidence": gtm_conf, "scores": gtm_scores},
+            "gtm": {
+                "predicted_class": gtm_class,
+                "confidence": gtm_conf,
+                "scores": gtm_scores,
+                "available": gtm_available,
+                "state": gtm_state,
+            },
             "comparison": {
                 "match": match,
                 "agreement": agreement,
                 "confidence_difference": conf_diff,
                 "top_two_margin": top_two_margin,
+                # When GTM is not configured the comparison cannot be performed;
+                # it is BLOCKED, never silently satisfied with the Python result.
+                "status": "OK" if gtm_available else "BLOCKED — GTM model unavailable",
             },
             "overlap": {
                 "overlapping": overlapping,
@@ -141,10 +176,11 @@ class InferenceService:
             "review_reasons": decision["reasons"],
             "model_versions": {
                 "python": self.py_bundle.get("model_name"),
-                "gtm": self.gtm_bundle.get("model_name") if self.gtm_bundle else None,
+                "gtm": "Google Teachable Machine" if gtm_available else None,
             },
             "top3_python": sorted(py_scores.items(), key=lambda kv: kv[1], reverse=True)[:3],
-            "top3_gtm": sorted(gtm_scores.items(), key=lambda kv: kv[1], reverse=True)[:3],
+            "top3_gtm": (sorted(gtm_scores.items(), key=lambda kv: kv[1], reverse=True)[:3]
+                         if gtm_available else []),
         }
 
     def classify_file(self, path: Path, consecutive: int = 1) -> dict[str, Any]:

@@ -177,14 +177,18 @@ def main() -> None:
             best_name, best_est, best_val_f1, best_params = name, est, f1, params
     print(f"\nBest Python model: {best_name} (val macro-F1={best_val_f1:.3f}) params={best_params}\n")
 
-    # -- 2. Train the independent GTM-substitute model --
-    gtm_name = cfg["training"].get("gtm_model", "random_forest")
-    # If the GTM choice equals the Python best, pick a different family so the
-    # two models are genuinely independent.
-    if gtm_name == best_name:
-        gtm_name = "gradient_boosting" if best_name != "gradient_boosting" else "random_forest"
-    print(f"Training GTM-substitute model ({gtm_name}, independent)...")
-    gtm_est, _ = tune_estimator(gtm_name, seed + 1, X_tr, y_tr, tune)
+    # -- 2. Train a SECOND independent Python model (for model comparison) --
+    # NOTE: This is NOT Google Teachable Machine. GTM is a browser-exported
+    # audio model handled separately by webapp/services/gtm_service.py. This
+    # second scikit-learn model is a genuine cross-model comparison baseline
+    # (SRS Step 7 requires comparing >=3 models) and is saved as a clearly-named
+    # secondary Python model. It is never presented to the app as GTM.
+    second_name = cfg["training"].get("second_model", cfg["training"].get("gtm_model", "random_forest"))
+    if second_name == best_name:
+        second_name = "gradient_boosting" if best_name != "gradient_boosting" else "random_forest"
+    print(f"Training second independent Python model ({second_name}) for comparison...")
+    gtm_est, _ = tune_estimator(second_name, seed + 1, X_tr, y_tr, tune)
+    gtm_name = second_name  # kept as local var name below; saved under python2/
 
     # -- 3. Evaluate both on the held-out test set --
     py_eval = evaluate(best_est, X_te, y_te, class_names)
@@ -203,15 +207,15 @@ def main() -> None:
         print()
 
     summarise(f"Python model ({best_name})", py_eval)
-    summarise(f"GTM-substitute ({gtm_name})", gtm_eval)
+    summarise(f"Second Python model ({gtm_name})", gtm_eval)
 
     # -- 4. Save artefacts --
     import joblib
 
     models_dir = cfg.path("models_dir")
-    gtm_dir = cfg.path("gtm_model_dir")
+    second_dir = models_dir / "python2"          # second Python comparison model
     reports_dir = cfg.path("reports_dir")
-    for d in (models_dir, gtm_dir, reports_dir):
+    for d in (models_dir, second_dir, reports_dir):
         d.mkdir(parents=True, exist_ok=True)
 
     feature_names_list = data["feature_names"].tolist()
@@ -221,11 +225,12 @@ def main() -> None:
          "feature_names": feature_names_list, "version": "1.0.0"},
         models_dir / "sonicsentinel_model.joblib",
     )
+    # Second independent Python model (NOT GTM) for the model-comparison report.
     joblib.dump(
         {"model": gtm_est, "scaler": scaler, "label_encoder": encoder,
          "classes": class_names, "model_name": gtm_name,
          "feature_names": feature_names_list, "version": "1.0.0"},
-        gtm_dir / "gtm_model.joblib",
+        second_dir / "second_model.joblib",
     )
 
     metrics = {
@@ -311,9 +316,9 @@ def main() -> None:
         writer.writeheader()
         writer.writerows(report_rows)
 
-    print(f"Saved Python model -> {models_dir / 'sonicsentinel_model.joblib'}")
-    print(f"Saved GTM model    -> {gtm_dir / 'gtm_model.joblib'}")
-    print(f"Saved reports      -> {reports_dir}")
+    print(f"Saved Python model     -> {models_dir / 'sonicsentinel_model.joblib'}")
+    print(f"Saved 2nd comparison   -> {second_dir / 'second_model.joblib'}")
+    print(f"Saved reports          -> {reports_dir}")
     print(f"Model comparison report ({len(report_rows)} test recordings) -> {report_path}")
 
 

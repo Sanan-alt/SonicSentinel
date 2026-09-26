@@ -1,0 +1,114 @@
+# Severity + escalation rules (SRS deliverable 7).
+# A YAML mirror of the per-category alert policy. The runtime engine reads
+# alert_rules/alert_rules.json; this file documents the same policy in YAML and
+# is the human-editable reference for severity/escalation review.
+
+severity_levels:
+  - Informational
+  - Low
+  - Medium
+  - High
+  - Critical
+
+# Each category lists every SRS-required rule field.
+categories:
+  gunshot:
+    min_confidence: 75.0
+    top_two_margin: 8.0
+    required_consecutive: 2
+    require_model_agreement: true
+    min_audio_quality: Acceptable
+    severity: Critical
+    recommended_action: Notify security/emergency personnel per local procedure; verify location.
+    manual_review_condition: low_confidence OR model_disagreement OR poor_quality
+    escalation_condition: alert_fires AND severity == Critical
+  panic_scream:
+    min_confidence: 70.0
+    top_two_margin: 8.0
+    required_consecutive: 1
+    require_model_agreement: false
+    min_audio_quality: Acceptable
+    severity: Critical
+    recommended_action: Alert responders; check for a person in distress.
+    manual_review_condition: low_confidence OR poor_quality
+    escalation_condition: alert_fires
+  person_asking_for_help:
+    min_confidence: 70.0
+    top_two_margin: 8.0
+    required_consecutive: 1
+    require_model_agreement: false
+    min_audio_quality: Acceptable
+    severity: Critical
+    recommended_action: Treat as an emergency call for help; respond per local procedure.
+    manual_review_condition: low_confidence OR poor_quality
+    escalation_condition: alert_fires
+  glass_breaking:
+    min_confidence: 65.0
+    top_two_margin: 8.0
+    required_consecutive: 1
+    require_model_agreement: false
+    min_audio_quality: Acceptable
+    severity: High
+    recommended_action: Possible break-in or accident; inspect the area.
+    manual_review_condition: low_confidence OR poor_quality
+    escalation_condition: false
+  aggression:
+    min_confidence: 65.0
+    top_two_margin: 8.0
+    required_consecutive: 2
+    require_model_agreement: false
+    min_audio_quality: Acceptable
+    severity: High
+    recommended_action: Possible conflict; monitor and prepare to intervene.
+    manual_review_condition: low_confidence OR model_disagreement
+    escalation_condition: false
+  alarm_siren:
+    min_confidence: 60.0
+    top_two_margin: 8.0
+    required_consecutive: 1
+    require_model_agreement: false
+    min_audio_quality: Acceptable
+    severity: High
+    recommended_action: Acknowledge alarm/siren; identify the source.
+    manual_review_condition: low_confidence
+    escalation_condition: false
+  machinery_fault:
+    min_confidence: 60.0
+    top_two_margin: 8.0
+    required_consecutive: 1
+    require_model_agreement: false
+    min_audio_quality: Acceptable
+    severity: High
+    recommended_action: Schedule a maintenance inspection.
+    manual_review_condition: low_confidence
+    escalation_condition: false
+  vehicle_horn:
+    min_confidence: 55.0
+    top_two_margin: 8.0
+    required_consecutive: 1
+    require_model_agreement: false
+    min_audio_quality: Acceptable
+    severity: Medium
+    recommended_action: Log the traffic/environmental event.
+    manual_review_condition: low_confidence
+    escalation_condition: false
+  animal_sound:
+    min_confidence: 55.0
+    top_two_margin: 8.0
+    required_consecutive: 1
+    require_model_agreement: false
+    min_audio_quality: Acceptable
+    severity: Low
+    recommended_action: Log the non-critical animal sound.
+    manual_review_condition: low_confidence
+    escalation_condition: false
+  background_noise:
+    min_confidence: 50.0
+    top_two_margin: 8.0
+    required_consecutive: 1
+    require_model_agreement: false
+    min_audio_quality: Acceptable
+    severity: Informational
+    recommended_action: No action; ambient background.
+    manual_review_condition: none
+    escalation_condition: false

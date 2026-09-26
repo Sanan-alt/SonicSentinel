@@ -1,0 +1,8 @@
+# Development / testing dependencies (installed on top of requirements.txt).
+pytest>=8.0.0
+pypdf>=4.0.0          # read the SRS PDF during auditing
+
+# Optional: enables SERVER-SIDE Google Teachable Machine (Keras export) inference.
+# Not required to run the app; without it a Keras GTM export is validated but
+# runs only in the browser. Install only if you have a Keras GTM export.
+# tensorflow>=2.16.0

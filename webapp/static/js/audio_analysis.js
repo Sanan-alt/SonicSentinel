@@ -186,24 +186,38 @@ async function triggerDualModelInference() {
     // Python model
     setText('pyModelScore', `${py.confidence}%`);
     setBar('pyModelBar', py.confidence);
-    // GTM model
-    setText('tmModelScore', `${gtm.confidence}%`);
-    setBar('tmModelBar', gtm.confidence);
+
+    // Google Teachable Machine model — shown ONLY if a real GTM export is
+    // configured. Otherwise we honestly report it is not available and mark
+    // the comparison BLOCKED (the Python result is never shown as GTM).
+    const gtmReady = gtm && gtm.available;
+    if (gtmReady) {
+      setText('tmModelScore', `${gtm.confidence}%`);
+      setBar('tmModelBar', gtm.confidence);
+      renderTop3('gtmTop3', data.top3_gtm);
+    } else {
+      setText('tmModelScore', 'N/A');
+      setBar('tmModelBar', 0);
+      const gtmList = document.getElementById('gtmTop3');
+      if (gtmList) gtmList.innerHTML = '<li style="color:var(--text-muted)">GTM model not configured</li>';
+    }
 
     const deltaEl = document.getElementById('modelsConfidenceDelta');
     if (deltaEl) {
-      deltaEl.textContent = `Δ ${comp.confidence_difference}% - ${comp.agreement}`;
+      deltaEl.textContent = gtmReady
+        ? `Δ ${comp.confidence_difference}% - ${comp.agreement}`
+        : (comp.status || 'BLOCKED — GTM model unavailable');
     }
 
     // Model names (real)
     if (data.model_versions) {
       setText('pyModelName', data.model_versions.python || 'scikit-learn model');
-      setText('gtmModelName', data.model_versions.gtm || 'independent second model');
+      setText('gtmModelName', gtmReady ? 'Google Teachable Machine'
+        : ((gtm && gtm.state) || 'GTM_NOT_CONFIGURED'));
     }
 
-    // Top-3 predictions for each model (SRS xxxiv)
+    // Top-3 for the Python model (SRS xxxiv)
     renderTop3('pyTop3', data.top3_python);
-    renderTop3('gtmTop3', data.top3_gtm);
 
     // Comparison summary (SRS xxxii-xxxiii, xxxvi, xxxix)
     setText('resAgreement', comp.agreement);

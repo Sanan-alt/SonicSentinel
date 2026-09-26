@@ -29,7 +29,7 @@ paths:
   features_file: "features.npz"                  # extracted acoustic features (under output_root)
   models_dir: "python_models"                    # saved models + preprocessing pipeline (under output_root)
   reports_dir: "reports"                          # metrics, confusion matrices, plots (under output_root)
-  gtm_model_dir: "gtm_model"                     # second (Teachable-Machine-style) model (under output_root)
+  gtm_model_dir: "gtm_model"                     # real Google Teachable Machine export lives in <this>/export/ (human-supplied)
   uploads_dir: "uploads"                         # user-uploaded audio (under output_root)
   visuals_dir: "visuals"                         # generated waveform/spectrogram PNGs (under output_root)
   database: "sonicsentinel.db"                   # SQLite database file (under output_root)
@@ -110,7 +110,8 @@ training:
     - svm
     - random_forest
     - xgboost
-  # The "Google Teachable Machine" substitute: a SECOND model trained
-  # independently on the same training split (a different algorithm family so
-  # the two models genuinely disagree sometimes, per SRS dual-model design).
-  gtm_model: random_forest
+  # A SECOND independent Python model trained on the same split, used for the
+  # cross-model comparison report (SRS Step 7 requires comparing >=3 models).
+  # This is NOT Google Teachable Machine. GTM is a separate, browser-exported
+  # audio model loaded from models/gtm/export/ by webapp/services/gtm_service.py.
+  second_model: random_forest

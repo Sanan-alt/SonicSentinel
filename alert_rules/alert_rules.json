@@ -1,5 +1,5 @@
 {
-  "_comment": "Configurable alert rules (SRS Step 16 / requirement liii / deliverable 7). Administrators can edit these without touching code. min_confidence is a percent (0-100).",
+  "_comment": "Configurable alert rules (SRS Step 16 / requirement liii / deliverable 7). Administrators can edit these without touching code. min_confidence and top_two_margin are percents (0-100). Every category lists all SRS-required fields: min_confidence, top_two_margin, required_consecutive, require_model_agreement, min_audio_quality, severity, recommended_action, manual_review_condition, escalate.",
   "defaults": {
     "min_confidence": 60.0,
     "top_two_margin": 8.0,
@@ -12,60 +12,112 @@
     "gunshot": {
       "severity": "Critical",
       "min_confidence": 75.0,
+      "top_two_margin": 8.0,
       "required_consecutive": 2,
       "require_model_agreement": true,
       "min_audio_quality": "Acceptable",
-      "recommended_action": "Dispatch security immediately and verify location.",
+      "recommended_action": "Notify security/emergency personnel per local procedure and verify location.",
+      "manual_review_condition": "low_confidence OR model_disagreement OR poor_quality",
       "escalate": true
     },
     "panic_scream": {
       "severity": "Critical",
       "min_confidence": 70.0,
+      "top_two_margin": 8.0,
       "required_consecutive": 1,
-      "recommended_action": "Alert responders; check for person in distress.",
+      "require_model_agreement": false,
+      "min_audio_quality": "Acceptable",
+      "recommended_action": "Alert responders; check for a person in distress.",
+      "manual_review_condition": "low_confidence OR poor_quality",
       "escalate": true
     },
     "person_asking_for_help": {
       "severity": "Critical",
       "min_confidence": 70.0,
-      "recommended_action": "Treat as emergency call for help; respond.",
+      "top_two_margin": 8.0,
+      "required_consecutive": 1,
+      "require_model_agreement": false,
+      "min_audio_quality": "Acceptable",
+      "recommended_action": "Treat as an emergency call for help; respond per local procedure.",
+      "manual_review_condition": "low_confidence OR poor_quality",
       "escalate": true
     },
     "glass_breaking": {
       "severity": "High",
       "min_confidence": 65.0,
-      "recommended_action": "Possible break-in or accident; inspect area."
+      "top_two_margin": 8.0,
+      "required_consecutive": 1,
+      "require_model_agreement": false,
+      "min_audio_quality": "Acceptable",
+      "recommended_action": "Possible break-in or accident; inspect the area.",
+      "manual_review_condition": "low_confidence OR poor_quality",
+      "escalate": false
     },
     "aggression": {
       "severity": "High",
       "min_confidence": 65.0,
+      "top_two_margin": 8.0,
       "required_consecutive": 2,
-      "recommended_action": "Possible conflict; monitor and prepare to intervene."
+      "require_model_agreement": false,
+      "min_audio_quality": "Acceptable",
+      "recommended_action": "Possible conflict; monitor and prepare to intervene.",
+      "manual_review_condition": "low_confidence OR model_disagreement",
+      "escalate": false
     },
     "alarm_siren": {
       "severity": "High",
       "min_confidence": 60.0,
-      "recommended_action": "Acknowledge alarm/siren; identify source."
+      "top_two_margin": 8.0,
+      "required_consecutive": 1,
+      "require_model_agreement": false,
+      "min_audio_quality": "Acceptable",
+      "recommended_action": "Acknowledge alarm/siren; identify the source.",
+      "manual_review_condition": "low_confidence",
+      "escalate": false
     },
     "machinery_fault": {
       "severity": "High",
       "min_confidence": 60.0,
-      "recommended_action": "Schedule maintenance inspection."
+      "top_two_margin": 8.0,
+      "required_consecutive": 1,
+      "require_model_agreement": false,
+      "min_audio_quality": "Acceptable",
+      "recommended_action": "Schedule a maintenance inspection.",
+      "manual_review_condition": "low_confidence",
+      "escalate": false
     },
     "vehicle_horn": {
       "severity": "Medium",
       "min_confidence": 55.0,
-      "recommended_action": "Log traffic/environmental event."
+      "top_two_margin": 8.0,
+      "required_consecutive": 1,
+      "require_model_agreement": false,
+      "min_audio_quality": "Acceptable",
+      "recommended_action": "Log the traffic/environmental event.",
+      "manual_review_condition": "low_confidence",
+      "escalate": false
     },
     "animal_sound": {
       "severity": "Low",
       "min_confidence": 55.0,
-      "recommended_action": "Log non-critical animal sound."
+      "top_two_margin": 8.0,
+      "required_consecutive": 1,
+      "require_model_agreement": false,
+      "min_audio_quality": "Acceptable",
+      "recommended_action": "Log the non-critical animal sound.",
+      "manual_review_condition": "low_confidence",
+      "escalate": false
     },
     "background_noise": {
       "severity": "Informational",
       "min_confidence": 50.0,
-      "recommended_action": "No action; ambient background."
+      "top_two_margin": 8.0,
+      "required_consecutive": 1,
+      "require_model_agreement": false,
+      "min_audio_quality": "Acceptable",
+      "recommended_action": "No action; ambient background.",
+      "manual_review_condition": "none",
+      "escalate": false
     }
   }
 }

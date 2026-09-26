@@ -1,0 +1,11 @@
+class_label,train,val,test,total,target,meets_target
+machinery_fault,140,30,30,200,300,no
+glass_breaking,238,51,51,340,300,yes
+alarm_siren,84,18,18,120,300,no
+vehicle_horn,28,6,6,40,300,no
+animal_sound,336,72,72,480,300,yes
+gunshot,84,18,18,120,300,no
+panic_scream,84,18,18,120,300,no
+person_asking_for_help,210,45,45,300,300,yes
+aggression,171,37,36,244,300,no
+background_noise,196,42,42,280,300,no

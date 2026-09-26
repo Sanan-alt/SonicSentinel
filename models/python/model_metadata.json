@@ -1,0 +1,44 @@
+{
+  "model_name": "svm",
+  "model_version": "1.0.0",
+  "classes": [
+    "aggression",
+    "alarm_siren",
+    "animal_sound",
+    "background_noise",
+    "glass_breaking",
+    "gunshot",
+    "machinery_fault",
+    "panic_scream",
+    "person_asking_for_help",
+    "vehicle_horn"
+  ],
+  "n_features": 450,
+  "feature_config": {
+    "n_mfcc": 40,
+    "n_mels": 128,
+    "n_fft": 1024,
+    "hop_length": 512
+  },
+  "audio_config": {
+    "sample_rate": 22050,
+    "mono": true,
+    "duration": 5.0,
+    "top_db": 30,
+    "normalize": true
+  },
+  "test_accuracy": 0.8480243161094225,
+  "test_macro_f1": 0.8511939509470065,
+  "critical_class_recall": {
+    "gunshot": 1.0,
+    "glass_breaking": 0.94,
+    "panic_scream": 1.0,
+    "aggression": 0.7777777777777778,
+    "person_asking_for_help": 0.7555555555555555
+  },
+  "models_compared": [
+    "svm",
+    "random_forest",
+    "xgboost"
+  ]
+}

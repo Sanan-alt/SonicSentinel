@@ -1,0 +1,39 @@
+{
+  "total_rows": 2244,
+  "unique_originals": 2244,
+  "augmented_rows": 0,
+  "target_total": 3000,
+  "meets_total_target": false,
+  "per_class_total": {
+    "machinery_fault": 200,
+    "glass_breaking": 340,
+    "alarm_siren": 120,
+    "vehicle_horn": 40,
+    "animal_sound": 480,
+    "gunshot": 120,
+    "panic_scream": 120,
+    "person_asking_for_help": 300,
+    "aggression": 244,
+    "background_noise": 280
+  },
+  "split_totals": {
+    "train": 1571,
+    "val": 337,
+    "test": 336
+  },
+  "audio_scanned_for_stats": 2244,
+  "duration_seconds": {
+    "min": 0.189,
+    "max": 4439.746,
+    "mean": 17.111
+  },
+  "sample_rate_distribution": {
+    "44100": 1738,
+    "48000": 256,
+    "22050": 244,
+    "32000": 1,
+    "16000": 2,
+    "8000": 2,
+    "11025": 1
+  }
+}

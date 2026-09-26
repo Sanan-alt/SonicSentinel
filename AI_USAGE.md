@@ -64,3 +64,33 @@ The final classification remains the trained Python + GTM-substitute models only
 no generative-AI API produces predictions. Synthetic placeholder audio is
 disclosed here and tagged in the dataset so it is never presented as real,
 ethically-sourced recordings.
+
+## Update — SRS Compliance Hardening & Honest GTM Integration
+
+A further AI-assisted session (tool: **Kiro**) audited the repo against the SRS
+and made these changes, all reviewed and tested by the team:
+
+- **Removed the forbidden "GTM-substitute" misrepresentation.** The app no longer
+  presents a scikit-learn model as Google Teachable Machine. Added
+  `webapp/services/gtm_service.py` (real GTM export loader with explicit states
+  `GTM_NOT_CONFIGURED` / `GTM_MODEL_INVALID` / `GTM_MODEL_READY`), `gtm/` (import-ready
+  dataset export + README) and `models/gtm/export/`. When no export exists the app
+  shows GTM = "Not available" and marks comparison `BLOCKED`. The Python prediction
+  is **never** copied into the GTM result. The second scikit-learn model is retained
+  only as an internal cross-model comparison baseline, saved under `models/python2/`.
+- **Honest dataset validation.** `src/validate_dataset.py` reports the REAL per-class
+  counts (2,244/3,000 total) and near-duplicate / split-leakage checks. No fabricated
+  recordings or counts.
+- **Security.** Flask secret now comes from `SONICSENTINEL_SECRET_KEY` (env); added
+  `.env.example` and `documentation/SECURITY.md`. No secret is committed.
+- **Evidence-driven compliance.** `scripts/final_srs_audit.py` and
+  `scripts/run_all_tests.py` generate `reports/final/` reports that mark COMPLETE only
+  when functionality/evidence genuinely exists; blocked items are labelled
+  `BLOCKED_BY_REAL_DATA` / `BLOCKED_BY_EXTERNAL_GTM`. `documentation/SRS_COMPLIANCE_MATRIX.md`
+  documents the full status.
+- **Docs.** Added `GOOGLE_TEACHABLE_MACHINE.md`, `SECURITY.md`, `SRS_COMPLIANCE_MATRIX.md`,
+  and `tests/test_all_requirements.py`.
+
+No metrics, screenshots, deployment URLs, or GTM evidence were fabricated. The
+final classification is produced by the Python model and (when configured) the
+real Google Teachable Machine model, never by a generative-AI API.

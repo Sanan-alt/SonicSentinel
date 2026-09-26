@@ -1,0 +1,11 @@
+aggression,alarm_siren,animal_sound,background_noise,glass_breaking,gunshot,machinery_fault,panic_scream,person_asking_for_help,vehicle_horn
+28,0,0,4,2,0,2,0,0,0
+0,15,2,0,0,0,0,0,0,0
+0,2,59,0,1,1,3,0,3,0
+1,0,1,33,2,0,2,0,2,0
+1,0,1,0,47,0,1,0,0,0
+0,0,0,0,0,18,0,0,0,0
+1,0,2,3,0,0,24,0,0,0
+0,0,0,0,0,0,0,18,0,0
+1,0,3,3,4,0,0,0,34,0
+0,1,0,1,0,0,0,0,0,3

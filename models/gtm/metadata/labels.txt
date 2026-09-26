@@ -1,0 +1,10 @@
+0 Machinery Fault
+1 Glass Breaking
+2 Alarm or Siren
+3 Vehicle Horn
+4 Animal Sound
+5 Gunshot
+6 Panic Scream
+7 Aggression
+8 Person Asking for Help
+9 Background Noise

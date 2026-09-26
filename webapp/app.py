@@ -4,7 +4,7 @@ Reuses the existing UI (templates/static) but replaces the demo internals with:
   * a real SQLite database (users, events, alerts, reviews, audit),
   * hashed-password auth with role gating,
   * real audio upload/validation/storage + metadata + quality,
-  * dual-model inference (Python + independent GTM-substitute) with comparison,
+  * dual-model inference (Python + real Google Teachable Machine) with comparison,
   * a configurable alert-rule engine,
   * waveform + spectrogram generation.
 
@@ -45,7 +45,16 @@ USER_ROLES = [
 
 cfg = load_config()
 app = Flask(__name__)
-app.secret_key = "sonicsentinel-secret-key-2026-acoustic-ai"
+# Secret comes from the environment (never hardcoded/committed). A random
+# per-process fallback is used only for local dev so sessions still work; set
+# SONICSENTINEL_SECRET_KEY in production so sessions persist across restarts.
+import os as _os_secret  # noqa: E402
+import secrets as _secrets  # noqa: E402
+
+app.secret_key = _os_secret.environ.get("SONICSENTINEL_SECRET_KEY") or _secrets.token_hex(32)
+if not _os_secret.environ.get("SONICSENTINEL_SECRET_KEY"):
+    print("[security] SONICSENTINEL_SECRET_KEY not set — using a random dev key. "
+          "Set it in the environment for production.")
 
 db = Database(cfg.path("database"))
 db.init_db(seed=True)

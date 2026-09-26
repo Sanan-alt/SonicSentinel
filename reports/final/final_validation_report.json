@@ -1,0 +1,38 @@
+{
+  "summary": {
+    "environment": "passed",
+    "dataset_validation": "passed",
+    "pytest": "passed",
+    "srs_audit": "passed"
+  },
+  "details": [
+    {
+      "stage": "environment",
+      "status": "passed",
+      "evidence": [
+        "Environment OK"
+      ]
+    },
+    {
+      "stage": "dataset_validation",
+      "status": "passed",
+      "evidence": [
+        "Report -> D:\\sonicsentinel_data\\reports\\dataset"
+      ]
+    },
+    {
+      "stage": "pytest",
+      "status": "passed",
+      "evidence": [
+        "28 passed, 4 warnings in 13.86s"
+      ]
+    },
+    {
+      "stage": "srs_audit",
+      "status": "passed",
+      "evidence": [
+        "Compliance (excl. external blocks): 93.3%"
+      ]
+    }
+  ]
+}

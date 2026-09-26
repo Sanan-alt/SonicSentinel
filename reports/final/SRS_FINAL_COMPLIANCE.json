@@ -1,0 +1,119 @@
+{
+  "summary": {
+    "COMPLETE": 14,
+    "PARTIAL": 1,
+    "BLOCKED_BY_REAL_DATA": 2,
+    "BLOCKED_BY_EXTERNAL_GTM": 1
+  },
+  "compliance_pct_excl_external_blocks": 93.3,
+  "checks": [
+    {
+      "requirement": "Python classification model",
+      "status": "COMPLETE",
+      "evidence": "loaded sonicsentinel_model.joblib, model=svm, 10 classes",
+      "remaining_gap": ""
+    },
+    {
+      "requirement": "Model evaluation metrics (real)",
+      "status": "COMPLETE",
+      "evidence": "test_accuracy=0.8480243161094225, macro_f1=0.8511939509470065, n_test=329",
+      "remaining_gap": ""
+    },
+    {
+      "requirement": "Model target: accuracy >= 0.85",
+      "status": "PARTIAL",
+      "evidence": "actual accuracy=0.8480243161094225",
+      "remaining_gap": "improve data/model"
+    },
+    {
+      "requirement": "Model target: macro-F1 >= 0.80",
+      "status": "COMPLETE",
+      "evidence": "actual macro_f1=0.8511939509470065",
+      "remaining_gap": ""
+    },
+    {
+      "requirement": "Dataset >= 3,000 unique originals",
+      "status": "BLOCKED_BY_REAL_DATA",
+      "evidence": "actual unique originals = 2244",
+      "remaining_gap": "need 756 more real clips"
+    },
+    {
+      "requirement": "~300 originals per class",
+      "status": "BLOCKED_BY_REAL_DATA",
+      "evidence": "per-class counts: {'animal_sound': 480, 'machinery_fault': 200, 'background_noise': 280, 'alarm_siren': 120, 'vehicle_horn': 40, 'glass_breaking': 340, 'aggression': 244, 'person_asking_for_help': 300, 'gunshot': 120, 'panic_scream': 120}",
+      "remaining_gap": "below target: {'machinery_fault': 200, 'background_noise': 280, 'alarm_siren': 120, 'vehicle_horn': 40, 'aggression': 244, 'gunshot': 120, 'panic_scream': 120}"
+    },
+    {
+      "requirement": "Google Teachable Machine model",
+      "status": "BLOCKED_BY_EXTERNAL_GTM",
+      "evidence": "state=GTM_NOT_CONFIGURED: Export folder missing: D:\\sonicsentinel_data\\gtm_model\\export",
+      "remaining_gap": "human must create/train/export GTM in browser -> models/gtm/export/"
+    },
+    {
+      "requirement": "No fake GTM fallback",
+      "status": "COMPLETE",
+      "evidence": "gtm_service returns None when unavailable; inference marks comparison BLOCKED; Python prediction is never copied into GTM",
+      "remaining_gap": ""
+    },
+    {
+      "requirement": "Alert engine",
+      "status": "COMPLETE",
+      "evidence": "webapp/services/alerts.py present",
+      "remaining_gap": ""
+    },
+    {
+      "requirement": "Audio validation/quality",
+      "status": "COMPLETE",
+      "evidence": "webapp/services/audio_io.py present",
+      "remaining_gap": ""
+    },
+    {
+      "requirement": "Database + audit",
+      "status": "COMPLETE",
+      "evidence": "webapp/services/database.py present",
+      "remaining_gap": ""
+    },
+    {
+      "requirement": "Dual-model inference",
+      "status": "COMPLETE",
+      "evidence": "webapp/services/inference.py present",
+      "remaining_gap": ""
+    },
+    {
+      "requirement": "Continuous trainer",
+      "status": "COMPLETE",
+      "evidence": "webapp/services/trainer.py present",
+      "remaining_gap": ""
+    },
+    {
+      "requirement": "Dataset validation",
+      "status": "COMPLETE",
+      "evidence": "src/validate_dataset.py present",
+      "remaining_gap": ""
+    },
+    {
+      "requirement": "Secret via env + .env.example",
+      "status": "COMPLETE",
+      "evidence": ".env.example present",
+      "remaining_gap": ""
+    },
+    {
+      "requirement": "GTM setup doc",
+      "status": "COMPLETE",
+      "evidence": "documentation/GOOGLE_TEACHABLE_MACHINE.md present",
+      "remaining_gap": ""
+    },
+    {
+      "requirement": "Security doc",
+      "status": "COMPLETE",
+      "evidence": "documentation/SECURITY.md present",
+      "remaining_gap": ""
+    },
+    {
+      "requirement": "No hardcoded Flask secret",
+      "status": "COMPLETE",
+      "evidence": "secret read from SONICSENTINEL_SECRET_KEY",
+      "remaining_gap": ""
+    }
+  ]
+}

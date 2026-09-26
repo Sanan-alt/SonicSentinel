@@ -1,0 +1,224 @@
+{
+  "python_model": "svm",
+  "gtm_model": "random_forest",
+  "model_comparison": [
+    {
+      "model": "svm",
+      "val_accuracy": 0.8,
+      "val_macro_f1": 0.8007036363427111,
+      "best_params": {
+        "C": 50,
+        "gamma": "scale"
+      }
+    },
+    {
+      "model": "random_forest",
+      "val_accuracy": 0.746268656716418,
+      "val_macro_f1": 0.6906645810567642,
+      "best_params": {
+        "max_depth": null,
+        "n_estimators": 400
+      }
+    },
+    {
+      "model": "xgboost",
+      "val_accuracy": 0.7671641791044777,
+      "val_macro_f1": 0.7696219909527704,
+      "best_params": {
+        "learning_rate": 0.1,
+        "max_depth": 4
+      }
+    }
+  ],
+  "classes": [
+    "aggression",
+    "alarm_siren",
+    "animal_sound",
+    "background_noise",
+    "glass_breaking",
+    "gunshot",
+    "machinery_fault",
+    "panic_scream",
+    "person_asking_for_help",
+    "vehicle_horn"
+  ],
+  "n_train": 4672,
+  "n_val": 335,
+  "n_test": 329,
+  "python": {
+    "test_accuracy": 0.8480243161094225,
+    "test_macro_f1": 0.8511939509470065,
+    "test_macro_precision": 0.873442939929008,
+    "test_macro_recall": 0.8415636787058409,
+    "critical_class_recall": {
+      "gunshot": 1.0,
+      "glass_breaking": 0.94,
+      "panic_scream": 1.0,
+      "aggression": 0.7777777777777778,
+      "person_asking_for_help": 0.7555555555555555
+    },
+    "per_class": {
+      "aggression": {
+        "precision": 0.875,
+        "recall": 0.7777777777777778,
+        "f1-score": 0.8235294117647058,
+        "support": 36.0
+      },
+      "alarm_siren": {
+        "precision": 0.8333333333333334,
+        "recall": 0.8823529411764706,
+        "f1-score": 0.8571428571428571,
+        "support": 17.0
+      },
+      "animal_sound": {
+        "precision": 0.8676470588235294,
+        "recall": 0.855072463768116,
+        "f1-score": 0.8613138686131386,
+        "support": 69.0
+      },
+      "background_noise": {
+        "precision": 0.75,
+        "recall": 0.8048780487804879,
+        "f1-score": 0.7764705882352941,
+        "support": 41.0
+      },
+      "glass_breaking": {
+        "precision": 0.8392857142857143,
+        "recall": 0.94,
+        "f1-score": 0.8867924528301887,
+        "support": 50.0
+      },
+      "gunshot": {
+        "precision": 0.9473684210526315,
+        "recall": 1.0,
+        "f1-score": 0.972972972972973,
+        "support": 18.0
+      },
+      "machinery_fault": {
+        "precision": 0.75,
+        "recall": 0.8,
+        "f1-score": 0.7741935483870968,
+        "support": 30.0
+      },
+      "panic_scream": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 18.0
+      },
+      "person_asking_for_help": {
+        "precision": 0.8717948717948718,
+        "recall": 0.7555555555555555,
+        "f1-score": 0.8095238095238095,
+        "support": 45.0
+      },
+      "vehicle_horn": {
+        "precision": 1.0,
+        "recall": 0.6,
+        "f1-score": 0.75,
+        "support": 5.0
+      },
+      "accuracy": 0.8480243161094225,
+      "macro avg": {
+        "precision": 0.873442939929008,
+        "recall": 0.8415636787058409,
+        "f1-score": 0.8511939509470065,
+        "support": 329.0
+      },
+      "weighted avg": {
+        "precision": 0.8511610949832599,
+        "recall": 0.8480243161094225,
+        "f1-score": 0.8472399771492976,
+        "support": 329.0
+      }
+    }
+  },
+  "gtm": {
+    "test_accuracy": 0.7963525835866262,
+    "test_macro_f1": 0.7444064646728751,
+    "test_macro_precision": 0.7603754338474202,
+    "test_macro_recall": 0.7396859140969927,
+    "critical_class_recall": {
+      "gunshot": 1.0,
+      "glass_breaking": 0.96,
+      "panic_scream": 1.0,
+      "aggression": 0.7222222222222222,
+      "person_asking_for_help": 0.6888888888888889
+    },
+    "per_class": {
+      "aggression": {
+        "precision": 0.9285714285714286,
+        "recall": 0.7222222222222222,
+        "f1-score": 0.8125,
+        "support": 36.0
+      },
+      "alarm_siren": {
+        "precision": 1.0,
+        "recall": 0.7058823529411765,
+        "f1-score": 0.8275862068965517,
+        "support": 17.0
+      },
+      "animal_sound": {
+        "precision": 0.7236842105263158,
+        "recall": 0.7971014492753623,
+        "f1-score": 0.7586206896551724,
+        "support": 69.0
+      },
+      "background_noise": {
+        "precision": 0.7380952380952381,
+        "recall": 0.7560975609756098,
+        "f1-score": 0.7469879518072289,
+        "support": 41.0
+      },
+      "glass_breaking": {
+        "precision": 0.7741935483870968,
+        "recall": 0.96,
+        "f1-score": 0.8571428571428571,
+        "support": 50.0
+      },
+      "gunshot": {
+        "precision": 0.9473684210526315,
+        "recall": 1.0,
+        "f1-score": 0.972972972972973,
+        "support": 18.0
+      },
+      "machinery_fault": {
+        "precision": 0.696969696969697,
+        "recall": 0.7666666666666667,
+        "f1-score": 0.7301587301587301,
+        "support": 30.0
+      },
+      "panic_scream": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 18.0
+      },
+      "person_asking_for_help": {
+        "precision": 0.7948717948717948,
+        "recall": 0.6888888888888889,
+        "f1-score": 0.7380952380952381,
+        "support": 45.0
+      },
+      "vehicle_horn": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1-score": 0.0,
+        "support": 5.0
+      },
+      "accuracy": 0.7963525835866262,
+      "macro avg": {
+        "precision": 0.7603754338474202,
+        "recall": 0.7396859140969927,
+        "f1-score": 0.7444064646728751,
+        "support": 329.0
+      },
+      "weighted avg": {
+        "precision": 0.7935116030195011,
+        "recall": 0.7963525835866262,
+        "f1-score": 0.7896048726968045,
+        "support": 329.0
+      }
+    }
+  }
+}
