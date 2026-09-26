@@ -1,0 +1,405 @@
+paihlain jana hain https://freesound.org/ phir <input name="q" type="search" class="bw-front__hero-search" placeholder="Search sounds..." id="search-sounds">,phir search karni hain category example gunshot phir kuch yoon ain ga <input id="search-input-browse" class="bw-search__input" name="q" type="text" value="gunshot" placeholder="" autocomplete="off"> then enter phir janaa hain <div class="row no-gutters no-wrap">
+                <div class="col-4 col-lg-3">
+                    <div class="bw-player bw-player--hover-interactions" data-sound-id="507489" data-username="ElanHickler" data-user-id="107780" data-size="small" data-collection="true" data-collection-modal-content-url="/collections/507489/add/?ajax=1" data-bookmark="false" data-bookmark-modal-url="" data-add-bookmark-url="" data-similar-sounds="true" data-similar-sounds-modal-url="/people/ElanHickler/sounds/507489/similar/?ajax=1" data-remix-group="false" data-remix-group-modal-url="/people/ElanHickler/sounds/507489/remixes/?ajax=1" data-mp3="https://cdn.freesound.org/previews/507/507489_107780-lq.mp3" data-ogg="https://cdn.freesound.org/previews/507/507489_107780-lq.ogg" data-waveform="https://cdn.freesound.org/displays/507/507489_107780_wave_bw_M.png" data-spectrum="https://cdn.freesound.org/displays/507/507489_107780_spec_bw_M.jpg" data-title="archi_gunshot_scifi_09.flac" data-duration="6.49927" data-samplerate="44100.0" data-show-milliseconds="true" data-favorite="false" data-num-comments="0" data-num-downloads="238" tabindex="0">  
+<div class="bw-player__img-container"><img loading="lazy" class="bw-player__img" src="https://cdn.freesound.org/displays/507/507489_107780_wave_bw_M.png" alt="archi_gunshot_scifi_09.flac"><div class="bw-player__progress-indicator-container"><div class="bw-player__progress-indicator" style="transform: translateX(-210.08px);"></div></div><div class="bw-player__progress-container"><div class="bw-player__progress"><span class="bw-total__sound_duration">0:06.499</span><span class="hidden">0:00.000</span></div></div><div class="bw-player__controls"><button type="button" class="no-border-bottom-on-hover bw-player-control-btn bw-player__play-btn" title="Play/Pause" aria-label="Play/Pause"><i class="bw-icon-play"></i></button><button type="button" class="no-border-bottom-on-hover bw-player-control-btn text-20 loop-button" title="Loop" aria-label="Loop"><i class="bw-icon-loop"></i></button></div><div class="bw-player__top_controls right"><div class="bw-player__similar"><button type="button" class="no-border-bottom-on-hover bw-player-control-btn" title="Find similar sounds" aria-label="Find similar sounds" data-toggle="similar-sounds-modal" data-modal-content-url="/people/ElanHickler/sounds/507489/similar/?ajax=1" data-already-binded="true"><i class="bw-icon-similar"></i></button></div><div class="bw-player__favorite"><button type="button" class="no-border-bottom-on-hover bw-player-control-btn" title="Add to collection" aria-label="Add to collection" data-toggle="collection-modal" data-modal-content-url="/collections/507489/add/?ajax=1" data-already-binded="true"><i class="bw-icon-bookmark"></i></button></div></div></div><audio controls="true" preload="none" controlslist="nodownload"><source src="https://cdn.freesound.org/previews/507/507489_107780-lq.mp3" type="audio/mpeg"><source src="https://cdn.freesound.org/previews/507/507489_107780-lq.ogg" type="audio/ogg"></audio></div>
+                </div>
+                
+                <div class="col-8 col-lg-9">
+                    <div class="padding-left-3">
+                        <div class="between">
+                            <div>
+                                <h5 class="v-spacing-1"><a class="bw-link--black" href="/people/ElanHickler/sounds/507489/" title="archi_gunshot_scifi_09.flac">archi_gunshot_scifi_09.flac</a></h5>
+                            </div>
+                            <div class="text-grey text-right between stars-margin-top-middle-player">
+                                <div style="min-width:130px;" class="top right">
+<div class="bw-rating__container" data-show-added-rating-on-save="false" aria-label="Average rating of 4.8">
+    
+        
+            <input class="bw-rating__input" type="radio" name="rate-507489" data-rate-url="/people/ElanHickler/sounds/507489/rate/5/" id="rate-507489-5" value="5">
+            <label for="rate-507489-5" data-value="5" aria-label="Rate sound 5 stars">
+        
+            
+                <span class="bw-icon-half-star text-red">
+    
+        <span class="path1"></span><span class="path2"></span>
+        
+    
+</span>
+            
+        
+            </label>
+        
+    
+        
+            <input class="bw-rating__input" type="radio" name="rate-507489" data-rate-url="/people/ElanHickler/sounds/507489/rate/4/" id="rate-507489-4" value="4">
+            <label for="rate-507489-4" data-value="4" aria-label="Rate sound 4 stars">
+        
+            
+                <span class="bw-icon-star text-red">
+    
+</span>
+            
+        
+            </label>
+        
+    
+        
+            <input class="bw-rating__input" type="radio" name="rate-507489" data-rate-url="/people/ElanHickler/sounds/507489/rate/3/" id="rate-507489-3" value="3">
+            <label for="rate-507489-3" data-value="3" aria-label="Rate sound 3 stars">
+        
+            
+                <span class="bw-icon-star text-red">
+    
+</span>
+            
+        
+            </label>
+        
+    
+        
+            <input class="bw-rating__input" type="radio" name="rate-507489" data-rate-url="/people/ElanHickler/sounds/507489/rate/2/" id="rate-507489-2" value="2">
+            <label for="rate-507489-2" data-value="2" aria-label="Rate sound 2 stars">
+        
+            
+                <span class="bw-icon-star text-red">
+    
+</span>
+            
+        
+            </label>
+        
+    
+        
+            <input class="bw-rating__input" type="radio" name="rate-507489" data-rate-url="/people/ElanHickler/sounds/507489/rate/1/" id="rate-507489-1" value="1">
+            <label for="rate-507489-1" data-value="1" aria-label="Rate sound 1 star">
+        
+            
+                <span class="bw-icon-star text-red">
+    
+</span>
+            
+        
+            </label>
+        
+    
+</div><span class="bw-rating__count text-grey h-spacing-left-1">(4)</span></div>
+                            </div>
+                        </div>
+                        
+                        <div class="max-h-60px-md-50px text-black overflow-hidden v-spacing-1">
+                            Sci-fi gunshots mostly using KarmaFX.
+                        </div>
+                        
+                        <div class="bw-player__tags-list-height">
+                        
+                            <div class="display-inline-block"><a href="/browse/tags/blast/" class="no-hover btn-inverse text-black font-weight-normal border-grey-light text-center no-border-radius padding-1 no-text-wrap h-spacing-1 line-height-38 no-letter-spacing opacity-050 tag-container ">
+    blast
+</a></div>
+                        
+                            <div class="display-inline-block"><a href="/browse/tags/explosion/" class="no-hover btn-inverse text-black font-weight-normal border-grey-light text-center no-border-radius padding-1 no-text-wrap h-spacing-1 line-height-38 no-letter-spacing opacity-050 tag-container ">
+    explosion
+</a></div>
+                        
+                            <div class="display-inline-block"><a href="/browse/tags/fictional/" class="no-hover btn-inverse text-black font-weight-normal border-grey-light text-center no-border-radius padding-1 no-text-wrap h-spacing-1 line-height-38 no-letter-spacing opacity-050 tag-container ">
+    fictional
+</a></div>
+                        
+                            <div class="display-inline-block"><a href="/browse/tags/gun/" class="no-hover btn-inverse text-black font-weight-normal border-grey-light text-center no-border-radius padding-1 no-text-wrap h-spacing-1 line-height-38 no-letter-spacing opacity-050 tag-container ">
+    gun
+</a></div>
+                        
+                            <div class="display-inline-block"><a href="/browse/tags/gunshot/" class="no-hover btn-inverse text-black font-weight-normal border-grey-light text-center no-border-radius padding-1 no-text-wrap h-spacing-1 line-height-38 no-letter-spacing opacity-050 tag-container ">
+    gunshot
+</a></div>
+                        
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>,phir is pai click karna hain <div class="v-spacing-top-5 v-padding-bottom-5 ">
+                            
+                                
+                                    
+                                    <a class="no-hover btn-primary display-inline-block w-100 text-center sound-download-button" href="/people/ElanHickler/sounds/507489/download/507489__elanhickler__archi_gunshot_scifi_09.flac" data-show-after-download-modal-url="/after-download-modal/">Download sound</a>
+                                    
+                                
+                            
+
+                            
+
+                            
+
+                            
+
+                            
+
+                        </div>,phir is ko end tuk karna hain jubh bhi yaiaik ho ga phir is ko click karna hain <a href="/" class="no-hover"></a>,and same <div class="input-wrapper">
+                            <i class="bw-icon-search input-icon"></i><input name="q" type="search" class="bw-front__hero-search" placeholder="Search sounds..." id="search-sounds">
+                        </div>,ja kain category save karna jubh bhi aik poora chakar complete ho gain to us main sai category and sound name jo yahaan ho ga <h5 class="v-spacing-1"><a class="bw-link--black" href="/people/Xenonn/sounds/128301/" title="Layered Gunshot 9.wav">Layered Gunshot 9.wav</a></h5>,csv main save karna hain har categorysain 10,000 data ho or koi bhi dup na ho jub bhi run ho to csv main daikhta rhain kain kitni category hoi and har chakaer complete karnainpain bhi same karain and yai hain pages ki tags <li class="bw-pagination_circle bw-pagination_selected">
+                1
+            </li>,<a href="/search/?q=gunshot&amp;page=2#sound" data-page="2" title="Page 2">2</a>,<a href="/search/?q=gunshot&amp;page=45#sound" data-page="45" title="Last Page" aria-label="Last Page">45</a>,<span class="bw-icon-arrow ">
+    
+</span>,and baaki usefull data <div class="" aria-label="Sound gunshot__high_2.wav by eardeer">
+            <div class="row no-gutters no-wrap">
+                <div class="col-4 col-lg-3">
+                    <div class="bw-player bw-player--hover-interactions" data-sound-id="402009" data-username="eardeer" data-user-id="2155630" data-size="small" data-collection="true" data-collection-modal-content-url="/collections/402009/add/?ajax=1" data-bookmark="false" data-bookmark-modal-url="" data-add-bookmark-url="" data-similar-sounds="true" data-similar-sounds-modal-url="/people/eardeer/sounds/402009/similar/?ajax=1" data-remix-group="false" data-remix-group-modal-url="/people/eardeer/sounds/402009/remixes/?ajax=1" data-mp3="https://cdn.freesound.org/previews/402/402009_2155630-lq.mp3" data-ogg="https://cdn.freesound.org/previews/402/402009_2155630-lq.ogg" data-waveform="https://cdn.freesound.org/displays/402/402009_2155630_wave_bw_M.png" data-spectrum="https://cdn.freesound.org/displays/402/402009_2155630_spec_bw_M.jpg" data-title="gunshot__high_2.wav" data-duration="0.534167" data-samplerate="48000.0" data-show-milliseconds="true" data-favorite="false" data-num-comments="0" data-num-downloads="714" tabindex="0">  
+<div class="bw-player__img-container"><img loading="lazy" class="bw-player__img" src="https://cdn.freesound.org/displays/402/402009_2155630_wave_bw_M.png" alt="gunshot__high_2.wav"><div class="bw-player__progress-indicator-container"><div class="bw-player__progress-indicator" style="transform: translateX(-210.08px);"></div></div><div class="bw-player__progress-container"><div class="bw-player__progress"><span class="bw-total__sound_duration">0:00.534</span><span class="hidden">0:00.000</span></div></div><div class="bw-player__controls"><button type="button" class="no-border-bottom-on-hover bw-player-control-btn bw-player__play-btn" title="Play/Pause" aria-label="Play/Pause"><i class="bw-icon-play"></i></button><button type="button" class="no-border-bottom-on-hover bw-player-control-btn text-20 loop-button" title="Loop" aria-label="Loop"><i class="bw-icon-loop"></i></button></div><div class="bw-player__top_controls right"><div class="bw-player__similar"><button type="button" class="no-border-bottom-on-hover bw-player-control-btn" title="Find similar sounds" aria-label="Find similar sounds" data-toggle="similar-sounds-modal" data-modal-content-url="/people/eardeer/sounds/402009/similar/?ajax=1" data-already-binded="true"><i class="bw-icon-similar"></i></button></div><div class="bw-player__favorite"><button type="button" class="no-border-bottom-on-hover bw-player-control-btn" title="Add to collection" aria-label="Add to collection" data-toggle="collection-modal" data-modal-content-url="/collections/402009/add/?ajax=1" data-already-binded="true"><i class="bw-icon-bookmark"></i></button></div></div></div><audio controls="true" preload="none" controlslist="nodownload"><source src="https://cdn.freesound.org/previews/402/402009_2155630-lq.mp3" type="audio/mpeg"><source src="https://cdn.freesound.org/previews/402/402009_2155630-lq.ogg" type="audio/ogg"></audio></div>
+                </div>
+                
+                <div class="col-8 col-lg-9">
+                    <div class="padding-left-3">
+                        <div class="between">
+                            <div>
+                                <h5 class="v-spacing-1"><a class="bw-link--black" href="/people/eardeer/sounds/402009/" title="gunshot__high_2.wav">gunshot__high_2.wav</a></h5>
+                            </div>
+                            <div class="text-grey text-right between stars-margin-top-middle-player">
+                                <div style="min-width:130px;" class="top right">
+<div class="bw-rating__container" data-show-added-rating-on-save="false" aria-label="Average rating of 4.9">
+    
+        
+            <input class="bw-rating__input" type="radio" name="rate-402009" data-rate-url="/people/eardeer/sounds/402009/rate/5/" id="rate-402009-5" value="5">
+            <label for="rate-402009-5" data-value="5" aria-label="Rate sound 5 stars">
+        
+            
+                <span class="bw-icon-half-star text-red">
+    
+        <span class="path1"></span><span class="path2"></span>
+        
+    
+</span>
+            
+        
+            </label>
+        
+    
+        
+            <input class="bw-rating__input" type="radio" name="rate-402009" data-rate-url="/people/eardeer/sounds/402009/rate/4/" id="rate-402009-4" value="4">
+            <label for="rate-402009-4" data-value="4" aria-label="Rate sound 4 stars">
+        
+            
+                <span class="bw-icon-star text-red">
+    
+</span>
+            
+        
+            </label>
+        
+    
+        
+            <input class="bw-rating__input" type="radio" name="rate-402009" data-rate-url="/people/eardeer/sounds/402009/rate/3/" id="rate-402009-3" value="3">
+            <label for="rate-402009-3" data-value="3" aria-label="Rate sound 3 stars">
+        
+            
+                <span class="bw-icon-star text-red">
+    
+</span>
+            
+        
+            </label>
+        
+    
+        
+            <input class="bw-rating__input" type="radio" name="rate-402009" data-rate-url="/people/eardeer/sounds/402009/rate/2/" id="rate-402009-2" value="2">
+            <label for="rate-402009-2" data-value="2" aria-label="Rate sound 2 stars">
+        
+            
+                <span class="bw-icon-star text-red">
+    
+</span>
+            
+        
+            </label>
+        
+    
+        
+            <input class="bw-rating__input" type="radio" name="rate-402009" data-rate-url="/people/eardeer/sounds/402009/rate/1/" id="rate-402009-1" value="1">
+            <label for="rate-402009-1" data-value="1" aria-label="Rate sound 1 star">
+        
+            
+                <span class="bw-icon-star text-red">
+    
+</span>
+            
+        
+            </label>
+        
+    
+</div><span class="bw-rating__count text-grey h-spacing-left-1">(7)</span></div>
+                            </div>
+                        </div>
+                        
+                        <div class="max-h-60px-md-50px text-black overflow-hidden v-spacing-1">
+                            Gunshot sound made of some firework recodings.
+                        </div>
+                        
+                        <div class="bw-player__tags-list-height">
+                        
+                            <div class="display-inline-block"><a href="/browse/tags/firing/" class="no-hover btn-inverse text-black font-weight-normal border-grey-light text-center no-border-radius padding-1 no-text-wrap h-spacing-1 line-height-38 no-letter-spacing opacity-050 tag-container ">
+    firing
+</a></div>
+                        
+                            <div class="display-inline-block"><a href="/browse/tags/gun/" class="no-hover btn-inverse text-black font-weight-normal border-grey-light text-center no-border-radius padding-1 no-text-wrap h-spacing-1 line-height-38 no-letter-spacing opacity-050 tag-container ">
+    gun
+</a></div>
+                        
+                            <div class="display-inline-block"><a href="/browse/tags/gunshot/" class="no-hover btn-inverse text-black font-weight-normal border-grey-light text-center no-border-radius padding-1 no-text-wrap h-spacing-1 line-height-38 no-letter-spacing opacity-050 tag-container ">
+    gunshot
+</a></div>
+                        
+                            <div class="display-inline-block"><a href="/browse/tags/pistol/" class="no-hover btn-inverse text-black font-weight-normal border-grey-light text-center no-border-radius padding-1 no-text-wrap h-spacing-1 line-height-38 no-letter-spacing opacity-050 tag-container ">
+    pistol
+</a></div>
+                        
+                            <div class="display-inline-block"><a href="/browse/tags/shooting/" class="no-hover btn-inverse text-black font-weight-normal border-grey-light text-center no-border-radius padding-1 no-text-wrap h-spacing-1 line-height-38 no-letter-spacing opacity-050 tag-container ">
+    shooting
+</a></div>
+                        
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+            <div class="between v-spacing-top-1 v-spacing-2">
+                <div class="middle text-grey h-spacing-1">
+                    <div class="row no-gutters">
+                        <div class="col-12 col-lg-12 middle">
+                            <div class="h-spacing-1">
+                                
+    <div class="avatar" style="width:32px;height:32px;">
+        <img src="/data/avatars/2155/2155630_S.jpg" class="avatar " style="width:32px;height:32px;">
+    </div>
+
+                            </div>
+                            <a href="/people/eardeer/">eardeer</a>
+                            <div class="text-light-grey h-spacing-left-1 d-none d-lg-block no-text-wrap">September 13th, 2017</div>
+                        </div>
+                        <div class="col-lg-4 d-lg-none text-light-grey">
+                            September 13th, 2017
+                        </div>
+                    </div>
+                </div>
+                <div class="middle text-light-grey bw_sound-info-extended right">
+                    
+                    
+                    <div class="h-spacing-left-2" title="714 downloads">
+                        <a href="javascript:void(0)" data-toggle="modal-default" data-modal-content-url="/people/eardeer/sounds/402009/downloaders/?ajax=1" class="bw-link--grey-light" data-already-binded="true">
+                            <span class="bw-icon-download"></span> 714
+                        </a>
+                    </div>
+                    <div class="h-spacing-left-2" title="0 comments">
+                        <a href="javascript:void(0)" data-toggle="modal-default" data-modal-content-url="/people/eardeer/sounds/402009/comments/?ajax=1" class="bw-link--grey-light" data-already-binded="true">
+                            <span class="bw-icon-comments"></span> 0
+                        </a>
+                    </div>
+                    <div class="h-spacing-left-2" title="License: Attribution">
+                        <span class="bw-icon-by"></span>
+                    </div>
+                </div>
+            </div>
+        </div>,<div class="padding-left-3">
+                        <div class="between">
+                            <div>
+                                <h5 class="v-spacing-1"><a class="bw-link--black" href="/people/oussamaben/sounds/463323/" title="monster, screem, calling other monsters.wav">monster, screem, calling other monsters.wav</a></h5>
+                            </div>
+                            <div class="text-grey text-right between stars-margin-top-middle-player">
+                                <div style="min-width:130px;" class="top right">
+<div class="bw-rating__container" data-show-added-rating-on-save="false" aria-label="Average rating of 4.2">
+    
+        
+            <input class="bw-rating__input" type="radio" name="rate-463323" data-rate-url="/people/oussamaben/sounds/463323/rate/5/" id="rate-463323-5" value="5">
+            <label for="rate-463323-5" data-value="5" aria-label="Rate sound 5 stars">
+        
+            
+                <span class="bw-icon-star text-light-grey">
+    
+</span>
+            
+        
+            </label>
+        
+    
+        
+            <input class="bw-rating__input" type="radio" name="rate-463323" data-rate-url="/people/oussamaben/sounds/463323/rate/4/" id="rate-463323-4" value="4">
+            <label for="rate-463323-4" data-value="4" aria-label="Rate sound 4 stars">
+        
+            
+                <span class="bw-icon-star text-red">
+    
+</span>
+            
+        
+            </label>
+        
+    
+        
+            <input class="bw-rating__input" type="radio" name="rate-463323" data-rate-url="/people/oussamaben/sounds/463323/rate/3/" id="rate-463323-3" value="3">
+            <label for="rate-463323-3" data-value="3" aria-label="Rate sound 3 stars">
+        
+            
+                <span class="bw-icon-star text-red">
+    
+</span>
+            
+        
+            </label>
+        
+    
+        
+            <input class="bw-rating__input" type="radio" name="rate-463323" data-rate-url="/people/oussamaben/sounds/463323/rate/2/" id="rate-463323-2" value="2">
+            <label for="rate-463323-2" data-value="2" aria-label="Rate sound 2 stars">
+        
+            
+                <span class="bw-icon-star text-red">
+    
+</span>
+            
+        
+            </label>
+        
+    
+        
+            <input class="bw-rating__input" type="radio" name="rate-463323" data-rate-url="/people/oussamaben/sounds/463323/rate/1/" id="rate-463323-1" value="1">
+            <label for="rate-463323-1" data-value="1" aria-label="Rate sound 1 star">
+        
+            
+                <span class="bw-icon-star text-red">
+    
+</span>
+            
+        
+            </label>
+        
+    
+</div><span class="bw-rating__count text-grey h-spacing-left-1">(13)</span></div>
+                            </div>
+                        </div>
+                        
+                        <div class="max-h-60px-md-50px text-black overflow-hidden v-spacing-1">
+                            this was created using my  voice, i used REAPER sound fourge and some pitch shifters  to make it
+                        </div>
+                        
+                        <div class="bw-player__tags-list-height">
+                        
+                            <div class="display-inline-block"><a href="/browse/tags/call/" class="no-hover btn-inverse text-black font-weight-normal border-grey-light text-center no-border-radius padding-1 no-text-wrap h-spacing-1 line-height-38 no-letter-spacing opacity-050 tag-container ">
+    call
+</a></div>
+                        
+                            <div class="display-inline-block"><a href="/browse/tags/calling/" class="no-hover btn-inverse text-black font-weight-normal border-grey-light text-center no-border-radius padding-1 no-text-wrap h-spacing-1 line-height-38 no-letter-spacing opacity-050 tag-container ">
+    calling
+</a></div>
+                        
+                            <div class="display-inline-block"><a href="/browse/tags/monster/" class="no-hover btn-inverse text-black font-weight-normal border-grey-light text-center no-border-radius padding-1 no-text-wrap h-spacing-1 line-height-38 no-letter-spacing opacity-050 tag-container ">
+    monster
+</a></div>
+                        
+                            <div class="display-inline-block"><a href="/browse/tags/monsters/" class="no-hover btn-inverse text-black font-weight-normal border-grey-light text-center no-border-radius padding-1 no-text-wrap h-spacing-1 line-height-38 no-letter-spacing opacity-050 tag-container ">
+    monsters
+</a></div>
+                        
+                            <div class="display-inline-block"><a href="/browse/tags/screem/" class="no-hover btn-inverse text-black font-weight-normal border-grey-light text-center no-border-radius padding-1 no-text-wrap h-spacing-1 line-height-38 no-letter-spacing opacity-050 tag-container ">
+    screem
+</a></div>
+                        
+                        </div>
+                        
+                    </div>,<a class="no-hover btn-primary display-inline-block w-100 text-center sound-download-button" href="/people/milton./sounds/244448/download/244448__milton__perro-2.mp3" data-show-after-download-modal-url="/after-download-modal/">Download sound</a>,<a href="/search/?q=screeming&amp;f=&amp;s=Date+added+%28newest+first%29&amp;si_tags=0&amp;si_name=0&amp;si_description=0&amp;si_packname=0&amp;si_collection_names=0&amp;si_sound_id=0&amp;si_username=0&amp;d0=0&amp;d1=%2A&amp;ig=0&amp;r=0&amp;g=1&amp;dp=0&amp;cm=0&amp;mm=0&amp;page=2#sound" data-page="2" title="Page 2">2</a>.jahaan do pageshoor 3 page pain yai deekhain <h5>No more results</h5>,to next categorymain chli jain and jo jo category complete ho jain next category sain paihlain saari download ki hoi file ko jis name sain category scrape us kain name pai folder bun jain ga taakain easily pata chal sakain kain yain is ki file hain.

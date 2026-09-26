@@ -1,8 +1,8 @@
 @echo off
 REM ============================================================
-REM   SonicSentinel AI - train the models (one click)
-REM   Runs: organize -> extract features -> train both models.
-REM   Only needed once, or after you add new audio to Dataset\.
+REM   SonicSentinel AI - build / rebuild the models (one click)
+REM   Detects new audio in Dataset\, cleans + organizes, extracts
+REM   features, and trains both models. Safe to run any time.
 REM ============================================================
 title SonicSentinel AI - Training
 cd /d "%~dp0"
@@ -25,18 +25,13 @@ echo    Using Python: %PY%
 echo ============================================================
 echo.
 
-echo [1/3] Organising dataset ^(dedup + stratified split^)...
-"%PY%" src\organize.py
-if errorlevel 1 goto :fail
-
-echo.
-echo [2/3] Extracting acoustic features ^(+ augmentation^)...
-"%PY%" src\extract_features.py
-if errorlevel 1 goto :fail
-
-echo.
-echo [3/3] Training Python model + GTM-substitute...
-"%PY%" src\train.py
+REM Smart pipeline: rebuilds dataset+features only if the data changed,
+REM then always retrains. Use "train_models.bat force" to force a full rebuild.
+if /I "%~1"=="force" (
+    "%PY%" src\run_pipeline.py --force
+) else (
+    "%PY%" src\run_pipeline.py
+)
 if errorlevel 1 goto :fail
 
 echo.

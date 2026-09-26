@@ -6,12 +6,19 @@ Two sources are mapped here:
    the trailing number is the ESC-50 target (0-49). We map only the ESC-50
    categories that correspond to an SRS class; everything else is dropped so
    we never mislabel a clip.
-2. Hand-collected mp3 folders (Aggression, Glass breaking) - mapped by folder.
+2. Hand-collected mp3 folders (gunshot, Glass breaking, Help) - mapped by folder.
 
-NOTE (Option A): ESC-50 has no gunshot category, and no real recordings exist
-yet for gunshot, panic_scream, or person_asking_for_help. Those classes are
-intentionally absent from the current dataset and will be added when data
-arrives. The model trains only on classes that have real data.
+DATA NOTE: the shipped "Aggression" and "gunshot" folders currently hold
+byte-identical files whose audio is aggression (shouting / violent conflict).
+The mapping below therefore labels that audio as ``aggression`` (its true
+content) and the organiser de-duplicates by content hash, so the duplicate is
+counted once. To add a REAL gunshot class, drop genuine gunshot recordings into
+``Dataset/gunshot`` (replacing the placeholder copies): because the mapping
+already points that folder at ``gunshot``, the new clips are picked up on the
+next pipeline run with no code change.
+
+Any folder added under ``paths.mp3_folders`` in config.yaml is trained on
+automatically as long as it has an entry in ``MP3_FOLDER_TO_SRS`` below.
 """
 
 from __future__ import annotations
@@ -56,9 +63,13 @@ ESC50_TO_SRS: dict[str, str] = {
 }
 
 # Folder key (from config paths.mp3_folders) -> SRS class.
+# The audio actually present in each shipped folder is mapped to its TRUE class.
 MP3_FOLDER_TO_SRS: dict[str, str] = {
-    "aggression": "aggression",
-    "glassbreak": "glass_breaking",
+    "aggression": "aggression",              # Dataset/Aggression -> aggression (real content)
+    "glassbreak": "glass_breaking",          # Dataset/Glass breaking -> glass_breaking
+    "help": "person_asking_for_help",        # Dataset/Help -> person_asking_for_help
+    "gunshot": "gunshot",                    # Dataset/gunshot -> gunshot (drop real gunshots here)
+    "panic_scream": "panic_scream",          # Dataset/Panic scream -> panic_scream
 }
 
 

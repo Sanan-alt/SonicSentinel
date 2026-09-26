@@ -5,9 +5,21 @@ paths:
   # Raw source data as delivered.
   esc50_audio: "Dataset/Dataset/audio"          # ESC-50 original 44.1kHz clips (2000 files)
   esc50_meta: "esc50.csv"                        # target -> ESC-50 category map
-  mp3_folders:                                   # extra hand-collected mp3 folders
-    aggression: "Dataset/Aggression (1)"
+  mp3_folders:                                   # extra hand-collected mp3 folders (folder key -> path)
+    # Each folder maps to the SRS class whose audio it ACTUALLY contains
+    # (see src/sonic/labels.py -> MP3_FOLDER_TO_SRS). The organiser de-dups by
+    # content hash, so if two folders hold byte-identical files only one copy
+    # is kept (under the FIRST-listed folder's class). Add more folders freely:
+    # any new "<class>: Dataset/<Your Folder>" line is picked up automatically.
+    aggression: "Dataset/Aggression"
     glassbreak: "Dataset/Glass breaking"
+    help: "Dataset/Help"
+    gunshot: "Dataset/gunshot"
+    panic_scream: "Dataset/Panic scream"
+    # User-contributed clips (reviewer-labelled uploads / live captures). These
+    # live in per-class subfolders (Dataset/user_uploads/<class>/) and are added
+    # automatically by the background trainer - see webapp/services/trainer.py.
+    user_uploads: "Dataset/user_uploads"
   # Generated outputs.
   # NOTE: C: drive is full on this machine, so heavy generated artefacts live
   # on D:. Change output_root to a path on any drive with free space.
@@ -60,25 +72,32 @@ split:
   seed: 42
 
 # Feature extraction settings (SRS Step 6 / xx).
+# n_fft=1024 keeps peak memory low (this machine has ~7 GB RAM); it is still a
+# strong window for 22.05 kHz sound-event features. Raise to 2048 on a machine
+# with more free memory for slightly finer spectral resolution.
 features:
   n_mfcc: 40
   n_mels: 128
-  n_fft: 2048
+  n_fft: 1024
   hop_length: 512
 
 # Data augmentation (SRS requirement xix). Applied to TRAIN split only.
 augmentation:
   enabled: true
-  per_clip: 2               # number of augmented copies per training clip
+  per_clip: 2               # augmented copies per training clip (keeps peak RAM low)
   methods:                  # augmentations to sample from
     - add_noise
     - time_shift
     - pitch_shift
+    - pitch_up
+    - pitch_down
     - time_stretch
+    - speed_change
     - volume_adjust
     - reverb
     - distance_sim
     - device_sim
+    - freq_filter
 
 # Training settings.
 training:

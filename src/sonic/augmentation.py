@@ -94,17 +94,80 @@ def device_sim(y: np.ndarray, sr: int, rng: np.random.Generator) -> np.ndarray:
     return _fit_length(band.astype(np.float32), y.shape[0])
 
 
+def pitch_up(y: np.ndarray, sr: int, rng: np.random.Generator) -> np.ndarray:
+    """Shift pitch UP by 2-5 semitones (higher-frequency variant)."""
+    import librosa
+
+    steps = float(rng.uniform(2.0, 5.0))
+    out = librosa.effects.pitch_shift(y=y, sr=sr, n_steps=steps)
+    return _fit_length(out.astype(np.float32), y.shape[0])
+
+
+def pitch_down(y: np.ndarray, sr: int, rng: np.random.Generator) -> np.ndarray:
+    """Shift pitch DOWN by 2-5 semitones (lower-frequency variant)."""
+    import librosa
+
+    steps = float(rng.uniform(2.0, 5.0))
+    out = librosa.effects.pitch_shift(y=y, sr=sr, n_steps=-steps)
+    return _fit_length(out.astype(np.float32), y.shape[0])
+
+
+def speed_change(y: np.ndarray, sr: int, rng: np.random.Generator) -> np.ndarray:
+    """Speed up / slow down by resampling (changes tempo AND pitch)."""
+    factor = float(rng.uniform(0.8, 1.25))
+    idx = np.round(np.arange(0, len(y), factor)).astype(int)
+    idx = idx[idx < len(y)]
+    out = y[idx] if idx.size else y
+    return _fit_length(out.astype(np.float32), y.shape[0])
+
+
+def _biquad(y, sr, cutoff, kind):
+    """First-order high/low-pass filter (dependency-free)."""
+    rc = 1.0 / (2 * np.pi * cutoff)
+    dt = 1.0 / sr
+    out = np.zeros_like(y)
+    if kind == "low":
+        alpha = dt / (rc + dt)
+        out[0] = y[0] * alpha
+        for i in range(1, len(y)):
+            out[i] = out[i - 1] + alpha * (y[i] - out[i - 1])
+    else:  # high-pass
+        alpha = rc / (rc + dt)
+        out[0] = y[0]
+        for i in range(1, len(y)):
+            out[i] = alpha * (out[i - 1] + y[i] - y[i - 1])
+    return out.astype(np.float32)
+
+
+def freq_filter(y: np.ndarray, sr: int, rng: np.random.Generator) -> np.ndarray:
+    """Apply a random low-pass or high-pass filter (frequency-content variation)."""
+    if rng.random() < 0.5:
+        cutoff = float(rng.uniform(1500, 5000))   # low-pass: keep lows
+        out = _biquad(y, sr, cutoff, "low")
+    else:
+        cutoff = float(rng.uniform(200, 1200))    # high-pass: keep highs
+        out = _biquad(y, sr, cutoff, "high")
+    return _fit_length(out, y.shape[0])
+
+
 # Registry of augmentations that need only (y, rng) vs (y, sr, rng).
-_NEEDS_SR = {"pitch_shift", "reverb", "distance_sim", "device_sim"}
+_NEEDS_SR = {
+    "pitch_shift", "reverb", "distance_sim", "device_sim",
+    "pitch_up", "pitch_down", "speed_change", "freq_filter",
+}
 _AUG_FUNCS = {
     "add_noise": add_noise,
     "time_shift": time_shift,
     "pitch_shift": pitch_shift,
+    "pitch_up": pitch_up,
+    "pitch_down": pitch_down,
     "time_stretch": time_stretch,
+    "speed_change": speed_change,
     "volume_adjust": volume_adjust,
     "reverb": reverb,
     "distance_sim": distance_sim,
     "device_sim": device_sim,
+    "freq_filter": freq_filter,
 }
 
 

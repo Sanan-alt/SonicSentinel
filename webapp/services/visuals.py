@@ -20,9 +20,20 @@ def generate_waveform(y: np.ndarray, sr: int, out_path: Path) -> Path:
     import matplotlib.pyplot as plt
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    t = np.linspace(0, len(y) / sr, num=len(y))
+
+    # Downsample for plotting so very long clips don't blow up memory:
+    # keep at most ~4000 points on screen (plenty for a waveform view).
+    max_points = 4000
+    total = len(y)
+    if total > max_points:
+        step = total // max_points
+        y_plot = y[::step]
+    else:
+        y_plot = y
+    t = np.linspace(0, total / sr, num=len(y_plot))
+
     fig, ax = plt.subplots(figsize=(8, 2.2))
-    ax.plot(t, y, color="#00e5ff", linewidth=0.6)
+    ax.plot(t, y_plot, color="#00e5ff", linewidth=0.6)
     ax.set_xlabel("Time (s)")
     ax.set_ylabel("Amplitude")
     ax.set_title("Waveform")
@@ -49,6 +60,12 @@ def generate_spectrogram(y: np.ndarray, sr: int, out_path: Path,
     import matplotlib.pyplot as plt
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Cap very long clips to the first 60s so the spectrogram stays small.
+    max_samples = sr * 60
+    if len(y) > max_samples:
+        y = y[:max_samples]
+
     mel = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=n_mels, n_fft=n_fft, hop_length=hop)
     mel_db = librosa.power_to_db(mel, ref=np.max)
 

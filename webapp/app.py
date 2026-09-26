@@ -67,6 +67,30 @@ def get_inference():
     return _inference
 
 
+def _reload_inference():
+    """Hot-reload the models after the background trainer retrains them."""
+    global _inference, _inference_error
+    _inference, _inference_error = None, None
+    get_inference()
+
+
+# Continuous background trainer: keeps models current with all Dataset folders
+# and user-contributed clips while the app runs (SRS: dataset-driven retraining).
+# Runs off the request path. Disable by setting env SONIC_BG_TRAIN=0.
+import os  # noqa: E402
+
+_trainer = None
+if os.environ.get("SONIC_BG_TRAIN", "1") != "0":
+    try:
+        from services.trainer import BackgroundTrainer
+        _interval = int(os.environ.get("SONIC_TRAIN_INTERVAL", "900"))
+        _trainer = BackgroundTrainer(cfg, reload_callback=_reload_inference,
+                                     interval_sec=_interval)
+        _trainer.start()
+    except Exception as _err:  # noqa: BLE001
+        print(f"[trainer] background training disabled: {_err}")
+
+
 # ---------------------------------------------------------------- helpers
 def _rel_visual(path: Path | None) -> str | None:
     """Convert an absolute visual path to a /media URL, or None."""
@@ -671,7 +695,39 @@ def submit_review():
         updates["final_class"] = UI_TO_PIPELINE.get(corrected, corrected)
     db.update_event(event_id, **updates)
     db.audit(session["user"]["email"], "review", f"{event_id}:{decision}")
+
+    # Feed the reviewer-verified clip back into the training set so the model
+    # learns from real user data on the next background cycle (SRS: retraining).
+    if _trainer is not None and decision in ("Confirmed", "Corrected"):
+        ev = db.get_event(event_id)
+        stored = ev.get("stored_path") if ev else None
+        if stored and Path(stored).exists():
+            label = updates.get("final_class") or ev.get("final_class")
+            if label:
+                added = _trainer.add_labelled_clip(stored, label)
+                if added:
+                    _trainer.trigger_now()
     return jsonify({"ok": True})
+
+
+@app.route("/api/trainer-status", methods=["GET"])
+@login_required
+def trainer_status():
+    """Report the background trainer's state (SRS: continuous retraining)."""
+    if _trainer is None:
+        return jsonify({"enabled": False, "status": {"state": "disabled"}})
+    return jsonify({"enabled": True, "status": _trainer.status})
+
+
+@app.route("/api/trainer-run", methods=["POST"])
+@role_required("Administrator")
+def trainer_run():
+    """Admin: kick off a retraining cycle now (rebuilds only if data changed)."""
+    if _trainer is None:
+        return jsonify({"error": "Background trainer is disabled."}), 400
+    _trainer.trigger_now()
+    db.audit(session["user"]["email"], "trainer_run", "manual retrain triggered")
+    return jsonify({"ok": True, "message": "Retraining cycle started."})
 
 
 @app.route("/api/export", methods=["GET"])

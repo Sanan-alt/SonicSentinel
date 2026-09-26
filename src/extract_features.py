@@ -61,14 +61,25 @@ def main() -> None:
     aug_count = 0
     start = time.time()
 
+    import gc
+
+    def _features_with_retry(signal):
+        """Extract features; on a transient MemoryError, gc and retry once."""
+        try:
+            return extract_features(signal, settings.sample_rate, cfg)
+        except MemoryError:
+            gc.collect()
+            return extract_features(signal, settings.sample_rate, cfg)
+
     for i, row in meta.iterrows():
         clip_path = out_root / row["relative_path"]
         try:
             y = load_audio(clip_path, settings)
-            vec = extract_features(y, settings.sample_rate, cfg)
+            vec = _features_with_retry(y)
         except Exception as error:  # noqa: BLE001 - log and skip bad clips
             failures += 1
             print(f"  skip {row['audio_id']} ({clip_path.name}): {error}", file=sys.stderr)
+            gc.collect()
             continue
 
         # Original clip.
@@ -85,7 +96,8 @@ def main() -> None:
                 method = str(rng.choice(aug_methods))
                 try:
                     y_aug = augment(y, settings.sample_rate, method, rng)
-                    vec_aug = extract_features(y_aug, settings.sample_rate, cfg)
+                    vec_aug = _features_with_retry(y_aug)
+                    del y_aug
                 except Exception:  # noqa: BLE001
                     continue
                 vectors.append(vec_aug)
@@ -96,8 +108,10 @@ def main() -> None:
                 augmented.append(True)
                 aug_count += 1
 
+        del y
         done = i + 1
         if done % 200 == 0 or done == total:
+            gc.collect()
             elapsed = time.time() - start
             print(f"  {done}/{total} originals processed, {aug_count} augmented ({elapsed:.0f}s)")
 

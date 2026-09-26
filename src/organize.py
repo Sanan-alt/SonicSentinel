@@ -63,7 +63,7 @@ def collect_sources(cfg):
         if srs_class is not None:
             yield path, srs_class, "esc50"
 
-    # Hand-collected mp3 folders.
+    # Hand-collected class folders (one class per folder).
     for folder_key, srs_class in MP3_FOLDER_TO_SRS.items():
         folder = cfg.path("mp3_folders", folder_key)
         if not folder.exists():
@@ -71,6 +71,22 @@ def collect_sources(cfg):
         for path in sorted(folder.iterdir()):
             if path.is_file() and path.suffix.lower() in AUDIO_EXTS:
                 yield path, srs_class, f"mp3:{folder_key}"
+
+    # User-contributed clips: Dataset/user_uploads/<class>/*.  Each subfolder
+    # name must be a valid SRS class; other names are ignored. Picked up
+    # automatically by the background trainer (see webapp/services/trainer.py).
+    user_root = None
+    if "user_uploads" in cfg["paths"].get("mp3_folders", {}):
+        user_root = cfg.path("mp3_folders", "user_uploads")
+    if user_root and user_root.exists():
+        valid_classes = set(cfg.classes)
+        for class_dir in sorted(p for p in user_root.iterdir() if p.is_dir()):
+            srs_class = class_dir.name
+            if srs_class not in valid_classes:
+                continue
+            for path in sorted(class_dir.iterdir()):
+                if path.is_file() and path.suffix.lower() in AUDIO_EXTS:
+                    yield path, srs_class, f"user:{srs_class}"
 
 
 def stratified_split(items_by_class, ratios, seed):
@@ -98,6 +114,10 @@ def stratified_split(items_by_class, ratios, seed):
 def main() -> None:
     cfg = load_config()
     out_root = cfg.path("categorized")
+    # Clear any previous build so re-runs never mix stale copies into the
+    # dataset (otherwise removed/relabelled clips would linger).
+    if out_root.exists():
+        shutil.rmtree(out_root)
     out_root.mkdir(parents=True, exist_ok=True)
 
     # 1. Collect + de-duplicate.

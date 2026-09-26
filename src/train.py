@@ -33,6 +33,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from sonic.config import load_config
 
 
+# Bounded parallelism so training stays within memory on low-RAM machines.
+# Each parallel worker copies the training data; -1 (all cores) can exhaust
+# RAM and crash with BrokenProcessPool. Override with env SONIC_N_JOBS.
+import os as _os
+
+N_JOBS = int(_os.environ.get("SONIC_N_JOBS", "1"))
+
+
 def make_estimator(name: str, seed: int):
     from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
     from sklearn.svm import SVC
@@ -40,7 +48,7 @@ def make_estimator(name: str, seed: int):
     if name == "svm":
         return SVC(kernel="rbf", C=10, gamma="scale", probability=True, random_state=seed)
     if name == "random_forest":
-        return RandomForestClassifier(n_estimators=400, n_jobs=-1, random_state=seed)
+        return RandomForestClassifier(n_estimators=400, n_jobs=N_JOBS, random_state=seed)
     if name == "gradient_boosting":
         return GradientBoostingClassifier(random_state=seed)
     if name == "xgboost":
@@ -50,7 +58,7 @@ def make_estimator(name: str, seed: int):
             n_estimators=400, max_depth=6, learning_rate=0.1,
             subsample=0.9, colsample_bytree=0.9,
             objective="multi:softprob", tree_method="hist",
-            random_state=seed, n_jobs=-1, eval_metric="mlogloss",
+            random_state=seed, n_jobs=N_JOBS, eval_metric="mlogloss",
         )
     raise ValueError(f"unknown model: {name}")
 
@@ -82,7 +90,7 @@ def tune_estimator(name: str, seed: int, X, y, enabled: bool):
     if not grid:
         est.fit(X, y)
         return est, {}
-    search = GridSearchCV(est, grid, scoring="f1_macro", cv=3, n_jobs=-1)
+    search = GridSearchCV(est, grid, scoring="f1_macro", cv=3, n_jobs=N_JOBS)
     search.fit(X, y)
     return search.best_estimator_, search.best_params_
 

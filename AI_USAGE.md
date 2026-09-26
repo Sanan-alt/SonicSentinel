@@ -32,3 +32,35 @@ during development are declared here.
 Every module in this repository is understood by the team and can be explained on
 request, including preprocessing steps, extracted features, model choices, and
 evaluation metrics (per SRS items 1, 4, and 11).
+
+## Update — Dataset Relabelling, Missing-Class Fill & Continuous Training
+
+A later AI-assisted session (tool: **Kiro**) made the following changes, all
+reviewed and tested by the team:
+
+- **Fixed a data-labelling defect.** The shipped `Dataset/gunshot` folder held
+  byte-identical copies of the `Dataset/Aggression` audio, so gunshot audio was
+  actually aggression audio. Corrected the source-to-class mapping in
+  `config/config.yaml` and `src/sonic/labels.py` so each folder maps to the
+  class it truly contains (`Aggression -> aggression`, `Glass breaking ->
+  glass_breaking`, `Help -> person_asking_for_help`, `gunshot -> gunshot`,
+  `Panic scream -> panic_scream`). Removed the mislabelled copies from the
+  gunshot folder (originals preserved in the Aggression folder).
+- **Synthetic placeholders for empty classes.** `gunshot` and `panic_scream`
+  had no real recordings. `src/make_synth_samples.py` generates clearly-labelled
+  **synthetic** clips (tagged `synthetic_*`) so all ten classes can be modelled;
+  `src/make_sample_audio.py` fixes the mislabelled `sample_audio/gunshot.mp3`.
+  These are placeholders — drop real, ethically-sourced recordings into the same
+  `Dataset/<class>` folders to replace them, then re-run the pipeline.
+- **Continuous background training.** `webapp/services/trainer.py` runs the
+  training pipeline off the request path while the app is live, retrains when new
+  audio appears in any `Dataset/` folder or `Dataset/user_uploads/<class>/`, and
+  hot-reloads the live models. Reviewer-verified clips are fed back into training.
+- **Low-memory stability.** Training parallelism is bounded (`SONIC_N_JOBS`,
+  default 1) and feature extraction was made memory-frugal so training runs on a
+  ~7 GB-RAM machine without crashing.
+
+The final classification remains the trained Python + GTM-substitute models only;
+no generative-AI API produces predictions. Synthetic placeholder audio is
+disclosed here and tagged in the dataset so it is never presented as real,
+ethically-sourced recordings.

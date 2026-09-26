@@ -32,13 +32,21 @@ class AudioSettings:
         )
 
 
+# Never load more than this many seconds into memory at once. Some source
+# clips are several minutes long; we only need a short window for a fixed-size
+# feature vector, so loading the whole thing wastes memory (and can OOM).
+MAX_LOAD_SECONDS = 30.0
+
+
 def load_audio(path, settings: AudioSettings) -> np.ndarray:
     """Load a clip and apply the full preprocessing chain.
 
     Returns a 1-D float32 array of exactly ``duration * sample_rate`` samples.
     Raises ValueError for silent / empty signals so callers can reject them.
+    Only the first MAX_LOAD_SECONDS are read to keep memory bounded.
     """
-    y, _ = librosa.load(path, sr=settings.sample_rate, mono=settings.mono)
+    y, _ = librosa.load(path, sr=settings.sample_rate, mono=settings.mono,
+                        duration=MAX_LOAD_SECONDS)
     if y.size == 0:
         raise ValueError("empty audio signal")
 
@@ -68,8 +76,13 @@ def load_audio(path, settings: AudioSettings) -> np.ndarray:
 
 
 def load_raw(path, settings: AudioSettings) -> np.ndarray:
-    """Load + mono + resample only (no trim/pad) - for segmentation."""
-    y, _ = librosa.load(path, sr=settings.sample_rate, mono=settings.mono)
+    """Load + mono + resample only (no trim/pad) - for segmentation.
+
+    Capped to MAX_LOAD_SECONDS so a multi-minute clip yields a bounded number
+    of segments and stays within memory.
+    """
+    y, _ = librosa.load(path, sr=settings.sample_rate, mono=settings.mono,
+                        duration=MAX_LOAD_SECONDS)
     return y.astype(np.float32)
 
 
